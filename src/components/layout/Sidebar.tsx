@@ -15,7 +15,11 @@ const navItems: { labelKey: TranslationKey; href: string; icon: typeof LayoutDas
   { labelKey: 'nav_candidates', href: '/dashboard/candidates', icon: Users, exact: false },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
   const { t } = useLanguage()
 
@@ -38,6 +42,7 @@ export function Sidebar() {
             <Link
               key={item.labelKey}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
