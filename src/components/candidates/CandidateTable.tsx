@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -70,9 +70,12 @@ export function CandidateTable({ candidates }: CandidateTableProps) {
                   })}
                 </TableCell>
                 <TableCell>
-                  <Button asChild size="sm" variant="default">
-                    <Link href={`/dashboard/candidates/${candidate.id}`}>View Profile</Link>
-                  </Button>
+                  <Link
+                    href={`/dashboard/candidates/${candidate.id}`}
+                    className={buttonVariants({ variant: 'default', size: 'sm' })}
+                  >
+                    View Profile
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
