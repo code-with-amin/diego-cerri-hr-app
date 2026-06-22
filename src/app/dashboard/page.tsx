@@ -45,8 +45,8 @@ export default function DashboardPage({ searchParams }: DashboardPageProps) {
 
   return (
     <DashboardShell
-      title="Candidates"
-      subtitle={`${all.length} total registrations`}
+      title="Dashboard"
+      subtitle={`${mockCandidates.length} total registrations`}
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {stats.map((stat) => (

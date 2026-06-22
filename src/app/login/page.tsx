@@ -12,14 +12,15 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   const hasError = searchParams.error === 'invalid'
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8 gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-lg">
-            HR
+          <div className='flex justify-center items-center gap-2'>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-m">
+            KPI
+            </div>
+            <h1 className="text-xl text-primary-foreground font-semibold">Engineering Portal</h1>
           </div>
-          <h1 className="text-xl font-semibold">HR Admin Portal</h1>
-          <p className="text-sm text-muted-foreground">Sign in to access the dashboard</p>
         </div>
 
         <Card>
@@ -63,7 +64,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
           </CardContent>
         </Card>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center text-xs text-primary-foreground">
           Restricted to authorised HR personnel only.
         </p>
       </div>
