@@ -118,7 +118,7 @@ export function CandidateDetailContent({ candidate }: CandidateDetailContentProp
               {candidate.resumeFileName && (
                 <>
                   <Separator className="my-4" />
-                  <Button variant="outline" size="sm" className="w-full" disabled>
+                  <Button variant="default" size="lg" className="w-full">
                     <FileText className="mr-2 h-4 w-4" />
                     {candidate.resumeFileName}
                   </Button>

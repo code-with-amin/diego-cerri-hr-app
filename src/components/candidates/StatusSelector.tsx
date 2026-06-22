@@ -1,19 +1,27 @@
 'use client'
 
 import { useTransition } from 'react'
-import { Button } from '@/components/ui/button'
+import type React from 'react'
+import { Sparkles, Clock, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CandidateStatus } from '@/lib/types'
 import { updateStatusAction } from '@/app/actions/update-status'
 import { useLanguage } from '@/components/providers/LanguageProvider'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const STATUSES: CandidateStatus[] = ['New', 'Under Review', 'Approved', 'Rejected']
 
-const activeClasses: Record<CandidateStatus, string> = {
-  New:            'bg-sky-100 text-sky-700 border-sky-300 hover:bg-sky-100',
-  'Under Review': 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-100',
-  Approved:       'bg-green-100 text-green-700 border-green-300 hover:bg-green-100',
-  Rejected:       'bg-red-100 text-red-700 border-red-300 hover:bg-red-100',
+const statusIcons: Record<CandidateStatus, React.ReactNode> = {
+  New:            <Sparkles    className="size-3.5 text-sky-500" />,
+  'Under Review': <Clock       className="size-3.5 text-yellow-500" />,
+  Approved:       <CheckCircle2 className="size-3.5 text-green-500" />,
+  Rejected:       <XCircle     className="size-3.5 text-red-500" />,
 }
 
 interface StatusSelectorProps {
@@ -25,38 +33,35 @@ export function StatusSelector({ candidateId, currentStatus }: StatusSelectorPro
   const [isPending, startTransition] = useTransition()
   const { t } = useLanguage()
 
-  function handleSelect(status: CandidateStatus) {
+  function handleChange(status: CandidateStatus) {
     if (status === currentStatus || isPending) return
     startTransition(() => updateStatusAction(candidateId, status))
   }
 
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <p className="mb-2 text-s font-semibold uppercase tracking-wide text-muted-foreground">
         {t('status_label')}
       </p>
-      <div className="flex flex-wrap gap-2">
-        {STATUSES.map((status) => {
-          const isActive = status === currentStatus
-          return (
-            <Button
-              key={status}
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isPending}
-              onClick={() => handleSelect(status)}
-              className={cn(
-                'transition-colors',
-                isActive ? activeClasses[status] : 'hover:bg-muted',
-                isPending && 'opacity-60 cursor-wait',
-              )}
-            >
-              {status}
-            </Button>
-          )
-        })}
-      </div>
+      <Select
+        value={currentStatus}
+        onValueChange={(v) => handleChange(v as CandidateStatus)}
+        disabled={isPending}
+      >
+        <SelectTrigger className={cn('w-full', isPending && 'opacity-60 cursor-wait')}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {STATUSES.map((status) => (
+            <SelectItem key={status} value={status}>
+              <span className="flex items-center gap-2">
+                {statusIcons[status]}
+                {status}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       {isPending && (
         <p className="mt-2 text-xs text-muted-foreground animate-pulse">{t('status_saving')}</p>
       )}
