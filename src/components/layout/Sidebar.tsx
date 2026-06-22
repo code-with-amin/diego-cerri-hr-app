@@ -11,12 +11,12 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="flex h-screen w-60 flex-col bg-slate-900 text-slate-100 flex-shrink-0">
+    <aside className="flex h-screen w-60 flex-col bg-primary text-slate-100 flex-shrink-0">
       <div className="flex h-16 items-center gap-3 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-          HR
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-m">
+          KPI
         </div>
-        <span className="font-semibold text-sm tracking-wide">HR Admin</span>
+        <span className="font-semibold text-m tracking-wide">Engineering</span>
       </div>
 
       <Separator className="bg-slate-700" />
