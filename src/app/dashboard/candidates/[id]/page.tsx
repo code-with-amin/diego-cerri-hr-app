@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FileText } from 'lucide-react'
-import { mockCandidates } from '@/lib/mock-data'
+import { getCandidateById } from '@/lib/candidate-store'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -22,7 +22,7 @@ function initials(name: string) {
 }
 
 export default function CandidateDetailPage({ params }: PageProps) {
-  const candidate = mockCandidates.find((c) => c.id === params.id)
+  const candidate = getCandidateById(params.id)
   if (!candidate) notFound()
 
   const fmt = (iso: string) =>
@@ -132,7 +132,7 @@ export default function CandidateDetailPage({ params }: PageProps) {
 
           <Card>
             <CardContent className="pt-5">
-              <StatusSelector currentStatus={candidate.status} />
+              <StatusSelector candidateId={candidate.id} currentStatus={candidate.status} />
             </CardContent>
           </Card>
 

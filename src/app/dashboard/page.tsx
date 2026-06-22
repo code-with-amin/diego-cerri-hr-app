@@ -3,19 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { SearchFilterBar } from '@/components/candidates/SearchFilterBar'
 import { CandidateTable } from '@/components/candidates/CandidateTable'
-import { mockCandidates } from '@/lib/mock-data'
+import { getCandidates } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
 interface DashboardPageProps {
   searchParams: { q?: string; status?: string; date?: string }
 }
 
-function filterCandidates(params: DashboardPageProps['searchParams']) {
+function filterCandidates(
+  all: ReturnType<typeof getCandidates>,
+  params: DashboardPageProps['searchParams'],
+) {
   const q = params.q?.toLowerCase().trim() ?? ''
   const status = params.status
   const date = params.date ?? ''
 
-  return mockCandidates.filter((c) => {
+  return all.filter((c) => {
     if (q && !c.fullName.toLowerCase().includes(q) && !c.desiredRole.toLowerCase().includes(q)) {
       return false
     }
@@ -29,18 +32,16 @@ function filterCandidates(params: DashboardPageProps['searchParams']) {
   })
 }
 
-function getStats() {
-  return [
-    { label: 'Total Candidates', value: mockCandidates.length },
-    { label: 'New', value: mockCandidates.filter((c) => c.status === 'New').length },
-    { label: 'Under Review', value: mockCandidates.filter((c) => c.status === 'Under Review').length },
-    { label: 'Approved', value: mockCandidates.filter((c) => c.status === 'Approved').length },
-  ]
-}
-
 export default function DashboardPage({ searchParams }: DashboardPageProps) {
-  const stats = getStats()
-  const filtered = filterCandidates(searchParams)
+  const all = getCandidates()
+  const filtered = filterCandidates(all, searchParams)
+
+  const stats = [
+    { label: 'Total Candidates', value: all.length },
+    { label: 'New', value: all.filter((c) => c.status === 'New').length },
+    { label: 'Under Review', value: all.filter((c) => c.status === 'Under Review').length },
+    { label: 'Approved', value: all.filter((c) => c.status === 'Approved').length },
+  ]
 
   return (
     <DashboardShell
@@ -63,7 +64,7 @@ export default function DashboardPage({ searchParams }: DashboardPageProps) {
       </div>
 
       <Suspense>
-        <SearchFilterBar total={mockCandidates.length} filtered={filtered.length} />
+        <SearchFilterBar total={all.length} filtered={filtered.length} />
       </Suspense>
       <CandidateTable candidates={filtered} />
     </DashboardShell>
