@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useLanguage } from '@/components/providers/LanguageProvider'
 
 interface SearchFilterBarProps {
   total: number
@@ -21,6 +22,7 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -40,7 +42,7 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
       <div className="relative flex-1 min-w-[200px] max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name or role…"
+          placeholder={t('search_placeholder')}
           className="pl-9"
           defaultValue={searchParams.get('q') ?? ''}
           onChange={(e) => updateParam('q', e.target.value)}
@@ -55,10 +57,10 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
           <SelectValue placeholder="All Statuses" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Statuses</SelectItem>
-          <SelectItem value="New">New</SelectItem>
-          <SelectItem value="Under Review">Under Review</SelectItem>
-          <SelectItem value="Approved">Approved</SelectItem>
+          <SelectItem value="all">{t('filter_all')}</SelectItem>
+          <SelectItem value="New">{t('stat_new')}</SelectItem>
+          <SelectItem value="Under Review">{t('stat_under_review')}</SelectItem>
+          <SelectItem value="Approved">{t('stat_approved')}</SelectItem>
           <SelectItem value="Rejected">Rejected</SelectItem>
         </SelectContent>
       </Select>

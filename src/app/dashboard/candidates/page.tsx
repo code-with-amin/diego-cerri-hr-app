@@ -37,8 +37,9 @@ export default function CandidatesPage({ searchParams }: CandidatesPageProps) {
 
   return (
     <DashboardShell
-      title="Candidates"
-      subtitle={`${all.length} total registrations`}
+      titleKey="page_candidates"
+      subtitleKey="page_candidates_subtitle"
+      subtitleSuffix={String(all.length)}
     >
       <Suspense>
         <SearchFilterBar total={all.length} filtered={filtered.length} />

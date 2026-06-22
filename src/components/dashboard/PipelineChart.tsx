@@ -2,6 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/components/providers/LanguageProvider"
 import { CandidateStatus } from "@/lib/types"
 
 interface PipelineChartProps {
@@ -16,6 +17,7 @@ const STATUS_META: { status: CandidateStatus; colour: string }[] = [
 ]
 
 export function PipelineChart({ counts }: PipelineChartProps) {
+  const { t } = useLanguage()
   const data = STATUS_META.map(({ status, colour }) => ({
     name: status,
     value: counts[status] ?? 0,
@@ -28,7 +30,7 @@ export function PipelineChart({ counts }: PipelineChartProps) {
     <Card className="h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Pipeline Breakdown
+          {t('chart_pipeline')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -68,7 +70,7 @@ export function PipelineChart({ counts }: PipelineChartProps) {
             </div>
           ))}
           <div className="col-span-2 mt-1 pt-2 border-t flex justify-between text-xs font-semibold">
-            <span>Total</span>
+            <span>{t('chart_total')}</span>
             <span>{total}</span>
           </div>
         </div>

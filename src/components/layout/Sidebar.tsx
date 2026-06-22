@@ -7,14 +7,17 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { logoutAction } from '@/app/login/actions'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/components/providers/LanguageProvider'
+import { TranslationKey } from '@/lib/i18n'
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
-  { label: 'Candidates', href: '/dashboard/candidates', icon: Users, exact: false },
+const navItems: { labelKey: TranslationKey; href: string; icon: typeof LayoutDashboard; exact: boolean }[] = [
+  { labelKey: 'nav_dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
+  { labelKey: 'nav_candidates', href: '/dashboard/candidates', icon: Users, exact: false },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { t } = useLanguage()
 
   return (
     <aside className="flex h-screen w-60 flex-col bg-primary text-slate-100 flex-shrink-0">
@@ -33,7 +36,7 @@ export function Sidebar() {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
           return (
             <Link
-              key={item.label}
+              key={item.labelKey}
               href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
@@ -43,7 +46,7 @@ export function Sidebar() {
               )}
             >
               <Icon className="h-4 w-4" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           )
         })}
@@ -64,7 +67,7 @@ export function Sidebar() {
         <form action={logoutAction}>
           <button
             type="submit"
-            title="Sign out"
+            title={t('sign_out')}
             className="text-slate-500 hover:text-slate-200 transition-colors"
           >
             <LogOut className="h-4 w-4" />

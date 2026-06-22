@@ -4,16 +4,17 @@ import { useState } from "react"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useLanguage } from "@/components/providers/LanguageProvider"
 import { Candidate } from "@/lib/types"
 
 interface SubmissionsChartProps {
   candidates: Candidate[]
 }
 
-const PERIODS = [
-  { label: "Last 7 Days", value: "7" },
-  { label: "Last 14 Days", value: "14" },
-  { label: "Last 30 Days", value: "30" },
+const PERIOD_KEYS = [
+  { key: "chart_period_7" as const, value: "7" },
+  { key: "chart_period_14" as const, value: "14" },
+  { key: "chart_period_30" as const, value: "30" },
 ]
 
 function buildDailyData(candidates: Candidate[], days: number) {
@@ -39,6 +40,7 @@ function buildDailyData(candidates: Candidate[], days: number) {
 
 export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
   const [period, setPeriod] = useState("7")
+  const { t } = useLanguage()
   const data = buildDailyData(candidates, Number(period))
 
   return (
@@ -46,16 +48,16 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Submissions
+            {t('chart_submissions')}
           </CardTitle>
           <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
             <SelectTrigger size="sm" className="w-36">
-              <span className="text-sm">{PERIODS.find((p) => p.value === period)?.label}</span>
+              <span className="text-sm">{t(PERIOD_KEYS.find((p) => p.value === period)!.key)}</span>
             </SelectTrigger>
             <SelectContent>
-              {PERIODS.map((p) => (
+              {PERIOD_KEYS.map((p) => (
                 <SelectItem key={p.value} value={p.value}>
-                  {p.label}
+                  {t(p.key)}
                 </SelectItem>
               ))}
             </SelectContent>
