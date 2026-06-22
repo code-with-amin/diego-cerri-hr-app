@@ -1,8 +1,11 @@
-import { Users, UserPlus, Clock, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+import { Users, UserPlus, Clock, CheckCircle, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { buttonVariants } from '@/components/ui/button'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { PipelineChart } from '@/components/dashboard/PipelineChart'
 import { SubmissionsChart } from '@/components/dashboard/SubmissionsChart'
+import { CandidateTable } from '@/components/candidates/CandidateTable'
 import { getCandidates } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
@@ -49,13 +52,27 @@ export default function DashboardPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2">
           <SubmissionsChart candidates={all} />
         </div>
         <div>
           <PipelineChart counts={statusCounts} />
         </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold">Latest Candidates</h2>
+          <Link
+            href="/dashboard/candidates"
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+          >
+            View all
+            <ArrowRight className="ml-1 h-3.5 w-3.5" />
+          </Link>
+        </div>
+        <CandidateTable candidates={all.slice(0, 5)} />
       </div>
     </DashboardShell>
   )
