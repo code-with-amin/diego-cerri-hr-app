@@ -1,20 +1,46 @@
+import { Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { SearchFilterBar } from '@/components/candidates/SearchFilterBar'
 import { CandidateTable } from '@/components/candidates/CandidateTable'
 import { mockCandidates } from '@/lib/mock-data'
+import { CandidateStatus } from '@/lib/types'
 
-function getStats(candidates: typeof mockCandidates) {
+interface DashboardPageProps {
+  searchParams: { q?: string; status?: string; date?: string }
+}
+
+function filterCandidates(params: DashboardPageProps['searchParams']) {
+  const q = params.q?.toLowerCase().trim() ?? ''
+  const status = params.status
+  const date = params.date ?? ''
+
+  return mockCandidates.filter((c) => {
+    if (q && !c.fullName.toLowerCase().includes(q) && !c.desiredRole.toLowerCase().includes(q)) {
+      return false
+    }
+    if (status && status !== 'all' && c.status !== (status as CandidateStatus)) {
+      return false
+    }
+    if (date && c.submittedAt.slice(0, 10) < date) {
+      return false
+    }
+    return true
+  })
+}
+
+function getStats() {
   return [
-    { label: 'Total Candidates', value: candidates.length },
-    { label: 'New', value: candidates.filter((c) => c.status === 'New').length },
-    { label: 'Under Review', value: candidates.filter((c) => c.status === 'Under Review').length },
-    { label: 'Approved', value: candidates.filter((c) => c.status === 'Approved').length },
+    { label: 'Total Candidates', value: mockCandidates.length },
+    { label: 'New', value: mockCandidates.filter((c) => c.status === 'New').length },
+    { label: 'Under Review', value: mockCandidates.filter((c) => c.status === 'Under Review').length },
+    { label: 'Approved', value: mockCandidates.filter((c) => c.status === 'Approved').length },
   ]
 }
 
-export default function DashboardPage() {
-  const stats = getStats(mockCandidates)
+export default function DashboardPage({ searchParams }: DashboardPageProps) {
+  const stats = getStats()
+  const filtered = filterCandidates(searchParams)
 
   return (
     <DashboardShell
@@ -36,8 +62,10 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <SearchFilterBar />
-      <CandidateTable candidates={mockCandidates} />
+      <Suspense>
+        <SearchFilterBar total={mockCandidates.length} filtered={filtered.length} />
+      </Suspense>
+      <CandidateTable candidates={filtered} />
     </DashboardShell>
   )
 }

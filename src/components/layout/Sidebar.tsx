@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users } from 'lucide-react'
+import { LayoutDashboard, LogOut, Users } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { logoutAction } from '@/app/login/actions'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -44,10 +45,19 @@ export function Sidebar() {
             HR
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-slate-200 truncate">HR Manager</p>
           <p className="text-xs text-slate-500 truncate">admin@company.com</p>
         </div>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            title="Sign out"
+            className="text-slate-500 hover:text-slate-200 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </form>
       </div>
     </aside>
   )
