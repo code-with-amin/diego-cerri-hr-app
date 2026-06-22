@@ -6,7 +6,7 @@ import { Pagination } from '@/components/candidates/Pagination'
 import { getCandidates } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
-const PAGE_SIZE = 50
+const PAGE_SIZE = 10
 
 interface CandidatesPageProps {
   searchParams: { q?: string; status?: string; date?: string; page?: string }
