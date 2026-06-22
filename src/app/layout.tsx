@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   description: 'Internal HR candidate management system',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = cookies()
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies()
   const stored = cookieStore.get('hr_lang')?.value
   const initialLang: Language = stored === 'pt' ? 'pt' : 'en'
 
