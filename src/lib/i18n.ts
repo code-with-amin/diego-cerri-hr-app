@@ -16,6 +16,7 @@ export const translations = {
     stat_new: 'New',
     stat_under_review: 'Under Review',
     stat_approved: 'Approved',
+    stat_rejected: 'Rejected',
     // Charts
     chart_submissions: 'Submissions',
     chart_pipeline: 'Pipeline Breakdown',
@@ -99,6 +100,7 @@ export const translations = {
     stat_new: 'Novos',
     stat_under_review: 'Em Análise',
     stat_approved: 'Aprovados',
+    stat_rejected: 'Rejeitados',
     chart_submissions: 'Inscrições',
     chart_pipeline: 'Distribuição do Pipeline',
     chart_period_7: 'Últimos 7 Dias',

@@ -1,6 +1,6 @@
 'use client'
 
-import { Users, UserPlus, Clock, CheckCircle } from 'lucide-react'
+import { Users, XCircle, Clock, CheckCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { CandidateStatus } from '@/lib/types'
@@ -15,7 +15,7 @@ export function StatCards({ total, counts }: StatCardsProps) {
 
   const stats = [
     { labelKey: t('stat_total'), value: total, icon: Users, colour: 'text-slate-600', bg: 'bg-slate-100' },
-    { labelKey: t('stat_new'), value: counts['New'] ?? 0, icon: UserPlus, colour: 'text-blue-600', bg: 'bg-blue-100' },
+    { labelKey: t('stat_rejected'), value: counts['Rejected'] ?? 0, icon: XCircle, colour: 'text-red-600', bg: 'bg-red-100' },
     { labelKey: t('stat_under_review'), value: counts['Under Review'] ?? 0, icon: Clock, colour: 'text-amber-600', bg: 'bg-amber-100' },
     { labelKey: t('stat_approved'), value: counts['Approved'] ?? 0, icon: CheckCircle, colour: 'text-green-600', bg: 'bg-green-100' },
   ]
