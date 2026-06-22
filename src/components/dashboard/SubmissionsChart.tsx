@@ -1,60 +1,71 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Candidate } from "@/lib/types"
 
 interface SubmissionsChartProps {
   candidates: Candidate[]
 }
 
-function buildDailyData(candidates: Candidate[]) {
-  const today = new Date()
-  const days: { date: string; label: string; submissions: number }[] = []
+const PERIODS = [
+  { label: "Last 7 Days", value: "7" },
+  { label: "Last 14 Days", value: "14" },
+  { label: "Last 30 Days", value: "30" },
+]
 
-  for (let i = 6; i >= 0; i--) {
+function buildDailyData(candidates: Candidate[], days: number) {
+  const today = new Date()
+  const buckets: { date: string; label: string; submissions: number }[] = []
+
+  for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today)
     d.setDate(today.getDate() - i)
     const isoDate = d.toISOString().slice(0, 10)
     const label = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
-    days.push({ date: isoDate, label, submissions: 0 })
+    buckets.push({ date: isoDate, label, submissions: 0 })
   }
 
   for (const c of candidates) {
     const isoDate = c.submittedAt.slice(0, 10)
-    const bucket = days.find((d) => d.date === isoDate)
+    const bucket = buckets.find((b) => b.date === isoDate)
     if (bucket) bucket.submissions++
   }
 
-  return days
+  return buckets
 }
 
 export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
-  const router = useRouter()
-  const data = buildDailyData(candidates)
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleClick(payload: any) {
-    const entry = payload?.activePayload?.[0]?.payload as { date: string; submissions: number } | undefined
-    if (!entry || entry.submissions === 0) return
-    router.push(`/dashboard/candidates?date=${entry.date}`)
-  }
+  const [period, setPeriod] = useState("7")
+  const data = buildDailyData(candidates, Number(period))
 
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Submissions — Last 7 Days
+            Submissions
           </CardTitle>
-          <span className="text-[10px] text-muted-foreground">Click a point to filter candidates</span>
+          <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
+            <SelectTrigger size="sm" className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PERIODS.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-52 cursor-pointer">
+        <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} onClick={handleClick}>
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="submissionsGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
@@ -67,6 +78,7 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 11, fill: "#6b7280" }}
+                interval={Number(period) > 14 ? 4 : 0}
               />
               <YAxis
                 tickLine={false}
@@ -77,7 +89,6 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
               <Tooltip
                 formatter={(value) => [value, "Submissions"]}
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                cursor={{ stroke: "#3b82f6", strokeWidth: 1, strokeDasharray: "4 4" }}
               />
               <Area
                 type="monotone"
@@ -86,7 +97,7 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
                 strokeWidth={2}
                 fill="url(#submissionsGradient)"
                 dot={{ fill: "#3b82f6", r: 4, strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: "#2563eb", strokeWidth: 2, stroke: "#fff" }}
+                activeDot={{ r: 5, strokeWidth: 0 }}
               />
             </AreaChart>
           </ResponsiveContainer>
