@@ -1,6 +1,7 @@
 "use client"
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
+import { useRouter } from "next/navigation"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Candidate } from "@/lib/types"
 
@@ -30,19 +31,30 @@ function buildDailyData(candidates: Candidate[]) {
 }
 
 export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
+  const router = useRouter()
   const data = buildDailyData(candidates)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleClick(payload: any) {
+    const entry = payload?.activePayload?.[0]?.payload as { date: string; submissions: number } | undefined
+    if (!entry || entry.submissions === 0) return
+    router.push(`/dashboard/candidates?date=${entry.date}`)
+  }
 
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Submissions — Last 7 Days
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Submissions — Last 7 Days
+          </CardTitle>
+          <span className="text-[10px] text-muted-foreground">Click a point to filter candidates</span>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="h-52">
+        <div className="h-52 cursor-pointer">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} onClick={handleClick}>
               <defs>
                 <linearGradient id="submissionsGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
@@ -65,6 +77,7 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
               <Tooltip
                 formatter={(value) => [value, "Submissions"]}
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                cursor={{ stroke: "#3b82f6", strokeWidth: 1, strokeDasharray: "4 4" }}
               />
               <Area
                 type="monotone"
@@ -73,7 +86,7 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
                 strokeWidth={2}
                 fill="url(#submissionsGradient)"
                 dot={{ fill: "#3b82f6", r: 4, strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: "#2563eb", strokeWidth: 2, stroke: "#fff" }}
               />
             </AreaChart>
           </ResponsiveContainer>
