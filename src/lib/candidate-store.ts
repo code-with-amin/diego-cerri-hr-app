@@ -4,7 +4,10 @@ import path from 'path'
 import { mockCandidates } from './mock-data'
 import { Candidate, CandidateStatus } from './types'
 
-const STORE_PATH = path.join(process.cwd(), 'data', 'status-overrides.json')
+// Vercel's filesystem is read-only; /tmp is the only writable location in production
+const STORE_PATH = process.env.VERCEL
+  ? '/tmp/status-overrides.json'
+  : path.join(process.cwd(), 'data', 'status-overrides.json')
 
 function readOverrides(): Record<string, CandidateStatus> {
   try {

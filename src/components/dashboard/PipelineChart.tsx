@@ -34,9 +34,9 @@ export function PipelineChart({ counts }: PipelineChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-44">
+        <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
               <Tooltip
                 formatter={(value, name) => [value, name]}
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
@@ -45,8 +45,8 @@ export function PipelineChart({ counts }: PipelineChartProps) {
                 data={data}
                 dataKey="value"
                 nameKey="name"
-                innerRadius={48}
-                outerRadius={76}
+                innerRadius={52}
+                outerRadius={80}
                 strokeWidth={2}
                 stroke="#fff"
               >
