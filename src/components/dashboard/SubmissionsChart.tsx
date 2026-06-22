@@ -50,7 +50,7 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
           </CardTitle>
           <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
             <SelectTrigger size="sm" className="w-36">
-              <SelectValue />
+              <span className="text-sm">{PERIODS.find((p) => p.value === period)?.label}</span>
             </SelectTrigger>
             <SelectContent>
               {PERIODS.map((p) => (
