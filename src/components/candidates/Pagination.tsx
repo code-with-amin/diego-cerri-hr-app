@@ -32,7 +32,7 @@ export function Pagination({ page, totalPages, totalResults, pageSize }: Paginat
     } else {
       params.set('page', String(p))
     }
-    if (size && size !== 25) {
+    if (size && size !== 10) {
       params.set('perPage', String(size))
     } else {
       params.delete('perPage')

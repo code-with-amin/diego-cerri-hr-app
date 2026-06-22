@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -52,10 +52,7 @@ export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
               </button>
             ))}
           </div>
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Bell className="h-4 w-4" />
-          </Button>
-          <Avatar className="h-8 w-8">
+<Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
               HR
             </AvatarFallback>

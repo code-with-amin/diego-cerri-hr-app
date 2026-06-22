@@ -7,7 +7,7 @@ import { getCandidates } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
 const VALID_PAGE_SIZES = [10, 25, 50, 100]
-const DEFAULT_PAGE_SIZE = 25
+const DEFAULT_PAGE_SIZE = 10
 
 interface CandidatesPageProps {
   searchParams: { q?: string; status?: string; date?: string; page?: string; perPage?: string }
