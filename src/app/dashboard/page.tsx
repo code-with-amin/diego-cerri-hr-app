@@ -1,52 +1,29 @@
-import { Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardShell } from '@/components/layout/DashboardShell'
-import { SearchFilterBar } from '@/components/candidates/SearchFilterBar'
-import { CandidateTable } from '@/components/candidates/CandidateTable'
+import { PipelineChart } from '@/components/dashboard/PipelineChart'
+import { SubmissionsChart } from '@/components/dashboard/SubmissionsChart'
 import { getCandidates } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
-interface DashboardPageProps {
-  searchParams: { q?: string; status?: string; date?: string }
-}
-
-function filterCandidates(
-  all: ReturnType<typeof getCandidates>,
-  params: DashboardPageProps['searchParams'],
-) {
-  const q = params.q?.toLowerCase().trim() ?? ''
-  const status = params.status
-  const date = params.date ?? ''
-
-  return all.filter((c) => {
-    if (q && !c.fullName.toLowerCase().includes(q) && !c.desiredRole.toLowerCase().includes(q)) {
-      return false
-    }
-    if (status && status !== 'all' && c.status !== (status as CandidateStatus)) {
-      return false
-    }
-    if (date && c.submittedAt.slice(0, 10) < date) {
-      return false
-    }
-    return true
-  })
-}
-
-export default function DashboardPage({ searchParams }: DashboardPageProps) {
+export default function DashboardPage() {
   const all = getCandidates()
-  const filtered = filterCandidates(all, searchParams)
+
+  const statusCounts = all.reduce(
+    (acc, c) => { acc[c.status] = (acc[c.status] ?? 0) + 1; return acc },
+    {} as Record<CandidateStatus, number>,
+  )
 
   const stats = [
     { label: 'Total Candidates', value: all.length },
-    { label: 'New', value: all.filter((c) => c.status === 'New').length },
-    { label: 'Under Review', value: all.filter((c) => c.status === 'Under Review').length },
-    { label: 'Approved', value: all.filter((c) => c.status === 'Approved').length },
+    { label: 'New', value: statusCounts['New'] ?? 0 },
+    { label: 'Under Review', value: statusCounts['Under Review'] ?? 0 },
+    { label: 'Approved', value: statusCounts['Approved'] ?? 0 },
   ]
 
   return (
     <DashboardShell
       title="Dashboard"
-      subtitle={`${mockCandidates.length} total registrations`}
+      subtitle={`${all.length} total registrations`}
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {stats.map((stat) => (
@@ -63,10 +40,14 @@ export default function DashboardPage({ searchParams }: DashboardPageProps) {
         ))}
       </div>
 
-      <Suspense>
-        <SearchFilterBar total={all.length} filtered={filtered.length} />
-      </Suspense>
-      <CandidateTable candidates={filtered} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <SubmissionsChart candidates={all} />
+        </div>
+        <div>
+          <PipelineChart counts={statusCounts} />
+        </div>
+      </div>
     </DashboardShell>
   )
 }

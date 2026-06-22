@@ -1,15 +1,21 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { LayoutDashboard, LogOut, Users } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { logoutAction } from '@/app/login/actions'
+import { cn } from '@/lib/utils'
 
 const navItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Candidates', href: '/dashboard', icon: Users },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
+  { label: 'Candidates', href: '/dashboard/candidates', icon: Users, exact: false },
 ]
 
 export function Sidebar() {
+  const pathname = usePathname()
+
   return (
     <aside className="flex h-screen w-60 flex-col bg-primary text-slate-100 flex-shrink-0">
       <div className="flex h-16 items-center gap-3 px-6">
@@ -24,11 +30,17 @@ export function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
           return (
             <Link
               key={item.label}
               href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-slate-700 text-white'
+                  : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+              )}
             >
               <Icon className="h-4 w-4" />
               {item.label}
