@@ -6,10 +6,11 @@ import { Pagination } from '@/components/candidates/Pagination'
 import { getCandidates } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
-const PAGE_SIZE = 10
+const VALID_PAGE_SIZES = [10, 25, 50, 100]
+const DEFAULT_PAGE_SIZE = 25
 
 interface CandidatesPageProps {
-  searchParams: { q?: string; status?: string; date?: string; page?: string }
+  searchParams: { q?: string; status?: string; date?: string; page?: string; perPage?: string }
 }
 
 function filterCandidates(
@@ -38,10 +39,13 @@ export default function CandidatesPage({ searchParams }: CandidatesPageProps) {
   const all = getCandidates()
   const filtered = filterCandidates(all, searchParams)
 
+  const rawPerPage = Number(searchParams.perPage ?? DEFAULT_PAGE_SIZE)
+  const pageSize = VALID_PAGE_SIZES.includes(rawPerPage) ? rawPerPage : DEFAULT_PAGE_SIZE
+
   const page = Math.max(1, Number(searchParams.page ?? '1') || 1)
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, totalPages)
-  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   return (
     <DashboardShell
@@ -58,7 +62,7 @@ export default function CandidatesPage({ searchParams }: CandidatesPageProps) {
           page={safePage}
           totalPages={totalPages}
           totalResults={filtered.length}
-          pageSize={PAGE_SIZE}
+          pageSize={pageSize}
         />
       </Suspense>
     </DashboardShell>
