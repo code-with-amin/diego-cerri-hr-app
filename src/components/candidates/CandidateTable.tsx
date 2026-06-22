@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { buttonVariants } from '@/components/ui/button'
@@ -11,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Candidate } from '@/lib/types'
 import { StatusBadge } from './StatusBadge'
+import { useLanguage } from '@/components/providers/LanguageProvider'
 
 interface CandidateTableProps {
   candidates: Candidate[]
@@ -21,18 +24,20 @@ function initials(name: string) {
 }
 
 export function CandidateTable({ candidates }: CandidateTableProps) {
+  const { t } = useLanguage()
+
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Candidate</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Work Model</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Submitted</TableHead>
+              <TableHead>{t('col_candidate')}</TableHead>
+              <TableHead>{t('col_role')}</TableHead>
+              <TableHead>{t('col_location')}</TableHead>
+              <TableHead>{t('col_work_model')}</TableHead>
+              <TableHead>{t('col_status')}</TableHead>
+              <TableHead>{t('col_submitted')}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -74,7 +79,7 @@ export function CandidateTable({ candidates }: CandidateTableProps) {
                     href={`/dashboard/candidates/${candidate.id}`}
                     className={buttonVariants({ variant: 'default', size: 'sm' })}
                   >
-                    View Profile
+                    {t('btn_view_profile')}
                   </Link>
                 </TableCell>
               </TableRow>
