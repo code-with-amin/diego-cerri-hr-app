@@ -5,7 +5,7 @@
 
 ## Overview
 
-Static HR Admin Dashboard prototype built with Next.js 14, TypeScript, Tailwind CSS, and shadcn/ui. All pages are functional for navigation and layout review. Backend integration is delivered in Milestone 2.
+HR Admin Dashboard built with Next.js 14, TypeScript, Tailwind CSS v4, and shadcn/ui. All pages are fully functional including auth, status management, analytics charts, and a bilingual EN/PT interface. Backend integration is delivered in Milestone 2.
 
 ## Tech Stack
 
@@ -13,6 +13,7 @@ Static HR Admin Dashboard prototype built with Next.js 14, TypeScript, Tailwind 
 - TypeScript
 - Tailwind CSS v4
 - shadcn/ui (Slate theme)
+- Recharts (area + donut charts)
 - Lucide React icons
 
 ## Scope
@@ -20,15 +21,19 @@ Static HR Admin Dashboard prototype built with Next.js 14, TypeScript, Tailwind 
 | Feature | Status |
 |---------|--------|
 | Project scaffold + shadcn/ui setup | ✅ Done |
-| Candidate listing page with stat cards | ✅ Done |
-| Search, filter, and date filter (functional) | ✅ Done |
-| Candidate detail page — full profile view | ✅ Done |
-| Status selector (functional — persists via JSON store) | ✅ Done |
-| Internal notes panel (UI only) | ✅ Done |
 | Admin login page (functional with session auth) | ✅ Done |
 | Route protection via middleware | ✅ Done |
 | Logout | ✅ Done |
+| Dashboard — stat cards with icons | ✅ Done |
+| Dashboard — submissions area line chart (7 / 14 / 30 day selector) | ✅ Done |
+| Dashboard — pipeline breakdown donut chart | ✅ Done |
+| Dashboard — latest candidates table preview with link to full list | ✅ Done |
+| Candidates page — full listing table with search, filter, and date filter | ✅ Done |
+| Candidate detail page — full profile view across 4 sections | ✅ Done |
+| Status selector (functional — persists via JSON store) | ✅ Done |
+| Internal notes panel (UI only) | ✅ Done |
 | Responsive layout (desktop + mobile) | ✅ Done |
+| EN / PT language toggle (cookie-based, no flash on refresh) | ✅ Done |
 | Favicon | 🔲 Pending |
 | Logo and correct product name | 🔲 Pending |
 | Color alignment with client brand | 🔲 Pending |
@@ -46,26 +51,36 @@ Static HR Admin Dashboard prototype built with Next.js 14, TypeScript, Tailwind 
 | Route | Description |
 |-------|-------------|
 | `/login` | Admin login |
-| `/dashboard` | Candidate listing with stat cards, search, and filters |
-| `/dashboard/candidates/[id]` | Candidate detail with profile sections and HR controls |
+| `/dashboard` | Analytics overview — stat cards, submissions chart, pipeline donut, latest candidates |
+| `/dashboard/candidates` | Full candidate listing with search, status filter, and date filter |
+| `/dashboard/candidates/[id]` | Candidate detail — profile sections, status selector, internal notes |
 
 ## File Structure
 
 ```
 src/
 ├── app/
-│   ├── actions/          # Server actions (status update)
-│   ├── dashboard/        # Listing and detail pages
-│   ├── login/            # Login page and auth action
-│   └── layout.tsx
+│   ├── actions/               # Server actions (status update)
+│   ├── dashboard/
+│   │   ├── page.tsx           # Analytics dashboard
+│   │   └── candidates/
+│   │       ├── page.tsx       # Candidate listing
+│   │       └── [id]/page.tsx  # Candidate detail
+│   ├── login/                 # Login page and auth action
+│   └── layout.tsx             # Reads hr_lang cookie, wraps with LanguageProvider
 ├── components/
-│   ├── candidates/       # Table, badges, filters, status selector, notes panel
-│   └── layout/           # Sidebar, TopBar, DashboardShell
+│   ├── candidates/            # Table, detail content, badges, filters, status selector, notes panel
+│   ├── dashboard/             # StatCards, SubmissionsChart, PipelineChart, LatestCandidatesSection
+│   ├── layout/                # Sidebar, TopBar (with lang toggle), DashboardShell
+│   ├── providers/             # LanguageProvider (EN/PT context + cookie persistence)
+│   └── ui/                    # shadcn primitives
 └── lib/
-    ├── auth.ts           # Auth constants
-    ├── candidate-store.ts # Status persistence (JSON file)
-    ├── mock-data.ts      # 5 mock candidates
-    └── types.ts          # Candidate and CandidateStatus types
+    ├── auth.ts                # Auth constants
+    ├── candidate-store.ts     # Status persistence (JSON file)
+    ├── i18n.ts                # EN/PT translation strings
+    ├── mock-data.ts           # 5 mock candidates
+    ├── types.ts               # Candidate and CandidateStatus types
+    └── utils.ts
 ```
 
 ## Branch
