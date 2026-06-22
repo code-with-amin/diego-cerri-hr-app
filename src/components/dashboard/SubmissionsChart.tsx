@@ -1,6 +1,6 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Candidate } from "@/lib/types"
 
@@ -42,7 +42,13 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
       <CardContent>
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="submissionsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis
                 dataKey="label"
@@ -60,8 +66,16 @@ export function SubmissionsChart({ candidates }: SubmissionsChartProps) {
                 formatter={(value) => [value, "Submissions"]}
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
               />
-              <Bar dataKey="submissions" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area
+                type="monotone"
+                dataKey="submissions"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                fill="url(#submissionsGradient)"
+                dot={{ fill: "#3b82f6", r: 4, strokeWidth: 0 }}
+                activeDot={{ r: 5, strokeWidth: 0 }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
