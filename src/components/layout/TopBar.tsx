@@ -52,7 +52,7 @@ export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
               </button>
             ))}
           </div>
-<Avatar className="h-8 w-8">
+        <Avatar className="hidden md:inline-flex h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
               HR
             </AvatarFallback>
