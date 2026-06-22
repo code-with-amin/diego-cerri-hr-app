@@ -27,7 +27,7 @@ export default function DashboardPage() {
   return (
     <DashboardShell
       title="Dashboard"
-      subtitle={`${all.length} candidates · pipeline analytics & recent activity`}
+      subtitle="Pipeline analytics & recent activity"
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {stats.map((stat) => {
