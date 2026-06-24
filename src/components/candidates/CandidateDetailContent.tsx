@@ -12,21 +12,24 @@ import { InternalNotesPanel } from './InternalNotesPanel'
 import { ProfileSection } from './ProfileSection'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { cn } from '@/lib/utils'
-import { Candidate } from '@/lib/types'
+import { Candidate, Note } from '@/lib/types'
 
 interface CandidateDetailContentProps {
   candidate: Candidate
+  notes: Note[]
 }
 
 function initials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
-export function CandidateDetailContent({ candidate }: CandidateDetailContentProps) {
+export function CandidateDetailContent({ candidate, notes }: CandidateDetailContentProps) {
   const { t } = useLanguage()
 
   const fmt = (iso: string) =>
     new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+
+  const subtitle = candidate.seniority ?? candidate.knowledgeAreas[0] ?? ''
 
   return (
     <>
@@ -46,40 +49,38 @@ export function CandidateDetailContent({ candidate }: CandidateDetailContentProp
               { label: t('field_full_name'), value: candidate.fullName },
               { label: t('field_email'), value: candidate.email },
               { label: t('field_phone'), value: candidate.phone },
-              { label: t('field_location'), value: `${candidate.city}, ${candidate.state}` },
+              { label: t('field_location'), value: candidate.city },
               { label: t('field_linkedin'), value: candidate.linkedIn },
-              { label: t('field_portfolio'), value: candidate.portfolio },
+              { label: t('field_birth_date'), value: candidate.birthDate },
             ]}
           />
           <ProfileSection
             title={t('section_professional')}
             fields={[
-              { label: t('field_desired_role'), value: candidate.desiredRole },
-              { label: t('field_expertise'), value: candidate.areaOfExpertise },
-              { label: t('field_years_exp'), value: `${candidate.yearsOfExperience} ${t('field_years_suffix')}` },
-              { label: t('field_employment_status'), value: candidate.currentEmploymentStatus },
-              { label: t('field_salary'), value: candidate.salaryExpectation },
-              { label: t('field_availability'), value: candidate.availabilityDate },
-              { label: t('field_work_model'), value: candidate.preferredWorkModel },
+              { label: t('field_employment_types'), value: candidate.employmentTypes },
+              { label: t('field_hours_per_day'), value: candidate.hoursPerDay ? `${candidate.hoursPerDay}h` : undefined },
+              { label: t('field_work_mode'), value: candidate.workMode },
+              { label: t('field_availability_start'), value: candidate.availabilityStart },
+              { label: t('field_travel'), value: candidate.travelAvailability },
+              { label: t('field_hourly_rate'), value: candidate.hourlyRate },
+              { label: t('field_monthly_expectation'), value: candidate.monthlyExpectation },
             ]}
           />
           <ProfileSection
             title={t('section_education')}
             fields={[
-              { label: t('field_degree'), value: candidate.degreeLevel },
-              { label: t('field_course'), value: candidate.courseMajor },
-              { label: t('field_institution'), value: candidate.institution },
-              { label: t('field_certifications'), value: candidate.certifications },
-              { label: t('field_languages'), value: candidate.languages },
+              { label: t('field_knowledge_areas'), value: candidate.knowledgeAreas },
+              { label: t('field_software_skills'), value: candidate.softwareSkills },
+              { label: t('field_seniority'), value: candidate.seniority },
             ]}
           />
           <ProfileSection
             title={t('section_experience')}
             fields={[
-              { label: t('field_summary'), value: candidate.professionalSummary },
-              { label: t('field_skills'), value: candidate.keyTechnicalSkills },
-              { label: t('field_tools'), value: candidate.softwareTools },
-              { label: t('field_achievements'), value: candidate.mainAchievements },
+              { label: t('field_work_done'), value: candidate.workDone },
+              { label: t('field_work_capable'), value: candidate.workCapable },
+              { label: t('field_years_exp'), value: candidate.yearsExperience != null ? `${candidate.yearsExperience} ${t('field_years_suffix')}` : undefined },
+              { label: t('field_observations'), value: candidate.observations },
             ]}
           />
         </div>
@@ -95,7 +96,7 @@ export function CandidateDetailContent({ candidate }: CandidateDetailContentProp
                 </Avatar>
                 <div>
                   <p className="font-semibold">{candidate.fullName}</p>
-                  <p className="text-sm text-muted-foreground">{candidate.desiredRole}</p>
+                  <p className="text-sm text-muted-foreground">{subtitle}</p>
                 </div>
                 <StatusBadge status={candidate.status} />
               </div>
@@ -106,7 +107,7 @@ export function CandidateDetailContent({ candidate }: CandidateDetailContentProp
                 {[
                   { label: t('detail_submitted'), value: fmt(candidate.submittedAt) },
                   { label: t('detail_last_updated'), value: fmt(candidate.lastUpdatedAt) },
-                  { label: t('field_work_model'), value: candidate.preferredWorkModel },
+                  { label: t('field_hours_per_day'), value: candidate.hoursPerDay ? `${candidate.hoursPerDay}h/day` : '—' },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between">
                     <dt className="text-muted-foreground">{item.label}</dt>
@@ -115,13 +116,20 @@ export function CandidateDetailContent({ candidate }: CandidateDetailContentProp
                 ))}
               </dl>
 
-              {candidate.resumeFileName && (
+              {(
                 <>
                   <Separator className="my-4" />
-                  <Button variant="default" size="lg" className="w-full">
-                    <FileText className="mr-2 h-4 w-4" />
-                    {candidate.resumeFileName}
-                  </Button>
+                  <a
+                    href={candidate.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <Button variant="default" size="lg" className="w-full">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Download Resume
+                    </Button>
+                  </a>
                 </>
               )}
             </CardContent>
@@ -133,7 +141,7 @@ export function CandidateDetailContent({ candidate }: CandidateDetailContentProp
             </CardContent>
           </Card>
 
-          <InternalNotesPanel notes={candidate.internalNotes} />
+          <InternalNotesPanel notes={notes} candidateId={candidate.id} />
         </div>
       </div>
     </>

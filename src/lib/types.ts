@@ -2,32 +2,49 @@ export type CandidateStatus = 'New' | 'Under Review' | 'Approved' | 'Rejected'
 
 export interface Candidate {
   id: string
+
+  // 1. Contact Information
   fullName: string
   email: string
   phone: string
   city: string
-  state: string
   linkedIn?: string
-  portfolio?: string
-  desiredRole: string
-  areaOfExpertise: string
-  yearsOfExperience: number
-  currentEmploymentStatus: string
-  salaryExpectation: string
-  availabilityDate: string
-  preferredWorkModel: 'Onsite' | 'Hybrid' | 'Remote'
-  degreeLevel: string
-  courseMajor: string
-  institution: string
-  certifications: string[]
-  languages: string[]
-  professionalSummary: string
-  keyTechnicalSkills: string[]
-  softwareTools: string[]
-  mainAchievements: string
-  resumeFileName?: string
+  birthDate?: string
+
+  // 2. Resume
+  resumeUrl?: string
+
+  // 3. Work Type & Availability
+  employmentTypes: string[]
+  hoursPerDay: number
+  workMode?: string
+  availabilityStart?: string
+  travelAvailability: string
+
+  // 4. Areas of Expertise
+  knowledgeAreas: string[]
+  softwareSkills?: string
+  seniority?: string
+
+  // 5. Experience & Skills
+  workDone: string
+  workCapable?: string
+  yearsExperience?: number
+
+  // 6. Compensation & Notes
+  hourlyRate: string
+  monthlyExpectation?: string
+  observations?: string
+
+  // Meta
   submittedAt: string
   lastUpdatedAt: string
   status: CandidateStatus
-  internalNotes?: string
+}
+
+export interface Note {
+  id: string
+  body: string
+  createdAt: string
+  admin: { id: string; email: string }
 }
