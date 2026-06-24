@@ -1,18 +1,53 @@
 'use client'
 
-import { Lock } from 'lucide-react'
+import { useEffect, useState, useTransition } from 'react'
+import { Lock, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useLanguage } from '@/components/providers/LanguageProvider'
+import { Note } from '@/lib/types'
+import { addNoteAction, updateNoteAction, deleteNoteAction } from '@/app/actions/notes'
 
 interface InternalNotesPanelProps {
-  notes?: string
+  notes: Note[]
+  candidateId: string
 }
 
-export function InternalNotesPanel({ notes }: InternalNotesPanelProps) {
+export function InternalNotesPanel({ notes, candidateId }: InternalNotesPanelProps) {
   const { t } = useLanguage()
+  const [isPending, startTransition] = useTransition()
+
+  const existing = notes[0] ?? null
+  const [draft, setDraft] = useState(existing?.body ?? '')
+
+  // Sync textarea when the server re-sends updated notes after revalidation
+  useEffect(() => {
+    setDraft(existing?.body ?? '')
+  }, [existing?.id, existing?.body])
+
+  const isDirty = draft.trim() !== (existing?.body ?? '')
+  const canSave = draft.trim().length > 0 && isDirty && !isPending
+
+  function handleSave() {
+    const body = draft.trim()
+    if (!body || isPending) return
+    startTransition(async () => {
+      if (existing) {
+        await updateNoteAction(candidateId, existing.id, body)
+      } else {
+        await addNoteAction(candidateId, body)
+      }
+    })
+  }
+
+  function handleDelete() {
+    if (!existing || isPending) return
+    startTransition(async () => {
+      await deleteNoteAction(candidateId, existing.id)
+    })
+  }
 
   return (
     <Card className="border-amber-200 bg-amber-50">
@@ -30,16 +65,30 @@ export function InternalNotesPanel({ notes }: InternalNotesPanelProps) {
       <CardContent className="space-y-3">
         <Textarea
           rows={4}
-          defaultValue={notes ?? ''}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
           placeholder={t('notes_placeholder')}
           className="resize-none bg-white border-amber-200 focus-visible:ring-amber-300"
-          readOnly
+          disabled={isPending}
         />
         <div className="flex items-center justify-between">
           <p className="text-xs text-amber-700">{t('notes_disclaimer')}</p>
-          <Button size="sm" disabled className="opacity-60">
-            {t('notes_save')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {existing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={handleDelete}
+                disabled={isPending}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" />
+              </Button>
+            )}
+            <Button size="sm" onClick={handleSave} disabled={!canSave}>
+              {isPending ? t('notes_saving') : t('notes_save')}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

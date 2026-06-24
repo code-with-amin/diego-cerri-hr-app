@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import type React from 'react'
 import { Sparkles, Clock, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -18,10 +18,10 @@ import {
 const STATUSES: CandidateStatus[] = ['New', 'Under Review', 'Approved', 'Rejected']
 
 const statusIcons: Record<CandidateStatus, React.ReactNode> = {
-  New:            <Sparkles    className="size-3.5 text-sky-500" />,
-  'Under Review': <Clock       className="size-3.5 text-yellow-500" />,
+  New:            <Sparkles     className="size-3.5 text-sky-500" />,
+  'Under Review': <Clock        className="size-3.5 text-yellow-500" />,
   Approved:       <CheckCircle2 className="size-3.5 text-green-500" />,
-  Rejected:       <XCircle     className="size-3.5 text-red-500" />,
+  Rejected:       <XCircle      className="size-3.5 text-red-500" />,
 }
 
 interface StatusSelectorProps {
@@ -31,11 +31,16 @@ interface StatusSelectorProps {
 
 export function StatusSelector({ candidateId, currentStatus }: StatusSelectorProps) {
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
   const { t } = useLanguage()
 
   function handleChange(status: CandidateStatus) {
     if (status === currentStatus || isPending) return
-    startTransition(() => updateStatusAction(candidateId, status))
+    setError(null)
+    startTransition(async () => {
+      const result = await updateStatusAction(candidateId, status)
+      if (result.error) setError(result.error)
+    })
   }
 
   return (
@@ -64,6 +69,9 @@ export function StatusSelector({ candidateId, currentStatus }: StatusSelectorPro
       </Select>
       {isPending && (
         <p className="mt-2 text-xs text-muted-foreground animate-pulse">{t('status_saving')}</p>
+      )}
+      {error && (
+        <p className="mt-2 text-xs text-red-600">{error}</p>
       )}
     </div>
   )
