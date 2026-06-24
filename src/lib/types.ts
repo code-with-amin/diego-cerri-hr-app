@@ -12,6 +12,7 @@ export interface Candidate {
   birthDate?: string
 
   // 2. Resume
+  resumeFileName?: string
   resumeUrl?: string
 
   // 3. Work Type & Availability
