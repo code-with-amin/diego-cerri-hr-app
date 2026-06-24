@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Spinner } from '@/components/ui/spinner'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Note } from '@/lib/types'
 import { addNoteAction, updateNoteAction, deleteNoteAction } from '@/app/actions/notes'
@@ -86,6 +87,7 @@ export function InternalNotesPanel({ notes, candidateId }: InternalNotesPanelPro
               </Button>
             )}
             <Button size="sm" onClick={handleSave} disabled={!canSave}>
+              {isPending && <Spinner className="mr-1.5 size-3.5" />}
               {isPending ? t('notes_saving') : t('notes_save')}
             </Button>
           </div>

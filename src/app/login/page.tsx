@@ -1,8 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { loginAction } from './actions'
+import { SubmitButton } from './SubmitButton'
 
 interface LoginPageProps {
   searchParams: { error?: string }
@@ -57,9 +57,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full mt-2">
-                Sign in
-              </Button>
+              <SubmitButton />
             </form>
           </CardContent>
         </Card>

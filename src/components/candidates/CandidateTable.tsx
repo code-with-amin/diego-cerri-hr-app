@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Candidate } from '@/lib/types'
-import { StatusBadge } from './StatusBadge'
+import { StatusSelector } from './StatusSelector'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 
 interface CandidateTableProps {
@@ -72,7 +72,11 @@ export function CandidateTable({ candidates, startIndex = 1 }: CandidateTablePro
                   {candidate.hourlyRate || '—'}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={candidate.status} />
+                  <StatusSelector
+                    candidateId={candidate.id}
+                    currentStatus={candidate.status}
+                    compact
+                  />
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(candidate.submittedAt).toLocaleDateString('en-GB', {
