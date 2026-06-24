@@ -14,6 +14,7 @@ export interface Candidate {
   // 2. Resume
   resumeFileName?: string
   resumeUrl?: string
+  resumeFileName?: string
 
   // 3. Work Type & Availability
   employmentTypes: string[]
