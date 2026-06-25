@@ -54,6 +54,7 @@ export const translations = {
     field_email: 'Email',
     field_phone: 'Phone / WhatsApp',
     field_location: 'City / State',
+    field_country: 'Country',
     field_linkedin: 'LinkedIn / Portfolio',
     field_birth_date: 'Date of Birth',
     // Work type & availability fields
@@ -88,6 +89,16 @@ export const translations = {
     // Language toggle
     lang_en: 'EN',
     lang_pt: 'PT',
+    // Login page
+    login_portal: 'Engineering Portal',
+    login_title: 'Sign in',
+    login_description: 'Enter your HR admin credentials',
+    login_email: 'Email address',
+    login_password: 'Password',
+    login_submit: 'Sign in',
+    login_submitting: 'Signing in…',
+    login_error: 'Invalid email or password. Please try again.',
+    login_restricted: 'Restricted to authorised HR personnel only.',
   },
   pt: {
     nav_dashboard: 'Painel',
@@ -132,6 +143,7 @@ export const translations = {
     field_email: 'E-mail',
     field_phone: 'Telefone / WhatsApp',
     field_location: 'Cidade / Estado',
+    field_country: 'País',
     field_linkedin: 'LinkedIn / Portfólio',
     field_birth_date: 'Data de Nascimento',
     field_employment_types: 'Tipo de Trabalho Preferido',
@@ -160,6 +172,16 @@ export const translations = {
     notes_delete: 'Excluir nota',
     lang_en: 'EN',
     lang_pt: 'PT',
+    // Login page
+    login_portal: 'Portal de Engenharia',
+    login_title: 'Entrar',
+    login_description: 'Insira suas credenciais de administrador de RH',
+    login_email: 'Endereço de e-mail',
+    login_password: 'Senha',
+    login_submit: 'Entrar',
+    login_submitting: 'Entrando…',
+    login_error: 'E-mail ou senha inválidos. Tente novamente.',
+    login_restricted: 'Restrito apenas a pessoal de RH autorizado.',
   },
 } as const
 

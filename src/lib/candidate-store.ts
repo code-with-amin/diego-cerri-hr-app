@@ -36,6 +36,7 @@ interface BackendDetail {
   email: string
   phone: string
   city: string
+  country: string | null
   linkedinUrl: string | null
   birthDate: string | null
   employmentTypes: string[]
@@ -99,6 +100,7 @@ function mapDetail(c: BackendDetail): Candidate {
     email: c.email,
     phone: c.phone,
     city: c.city,
+    country: c.country ?? undefined,
     linkedIn: c.linkedinUrl ?? undefined,
     birthDate: c.birthDate ? c.birthDate.slice(0, 10) : undefined,
 

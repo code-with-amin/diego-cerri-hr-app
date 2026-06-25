@@ -8,6 +8,7 @@ export interface Candidate {
   email: string
   phone: string
   city: string
+  country?: string
   linkedIn?: string
   birthDate?: string
 
