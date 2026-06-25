@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -12,8 +13,16 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   const hasError = searchParams.error === 'invalid'
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative min-h-screen flex items-center justify-center bg-primary px-4">
+      <Image
+        src="/bg.jpeg" 
+        alt="Background"
+        fill
+        priority
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(0,30,76,.92),rgba(28,58,97,.78))]" />
+      <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8 gap-2">
           <div className='flex justify-center items-center gap-2'>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-m">
