@@ -157,14 +157,10 @@ export async function getCandidates(params: ListParams = {}): Promise<Candidates
   if (params.status && params.status !== 'all') {
     qs.set('status', STATUS_TO_BACKEND[params.status as CandidateStatus])
   }
+  // Send plain YYYY-MM-DD bounds; the backend snaps them to the start/end of the
+  // day in UTC so the range is inclusive and timezone-consistent on both ends.
   if (params.dateFrom) qs.set('dateFrom', params.dateFrom)
-  if (params.dateTo) {
-    // Make the upper bound inclusive of the entire selected day.
-    const to = /^\d{4}-\d{2}-\d{2}$/.test(params.dateTo)
-      ? `${params.dateTo}T23:59:59.999`
-      : params.dateTo
-    qs.set('dateTo', to)
-  }
+  if (params.dateTo) qs.set('dateTo', params.dateTo)
   if (params.page) qs.set('page', String(params.page))
   if (params.limit) qs.set('limit', String(params.limit))
 

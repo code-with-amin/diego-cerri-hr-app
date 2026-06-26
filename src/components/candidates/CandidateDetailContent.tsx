@@ -27,7 +27,7 @@ export function CandidateDetailContent({ candidate, notes }: CandidateDetailCont
   const { t } = useLanguage()
 
   const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+    new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })
 
   const subtitle = candidate.seniority ?? candidate.knowledgeAreas[0] ?? ''
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Search, CalendarIcon, X } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { Input } from '@/components/ui/input'
@@ -31,6 +31,20 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
   const [fromOpen, setFromOpen] = useState(false)
   const [toOpen, setToOpen] = useState(false)
 
+  // Local input state so typing is instant; the URL (and server fetch) updates
+  // only after the user pauses typing (debounced).
+  const qParam = searchParams.get('q') ?? ''
+  const [searchValue, setSearchValue] = useState(qParam)
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  // Keep the input in sync when `q` changes externally (e.g. the Clear button).
+  useEffect(() => {
+    setSearchValue(qParam)
+  }, [qParam])
+
+  // Clear any pending debounce when the component unmounts.
+  useEffect(() => () => clearTimeout(searchTimer.current), [])
+
   const fromParam = searchParams.get('dateFrom')
   const toParam = searchParams.get('dateTo')
   const fromDate = fromParam ? parseISO(fromParam) : undefined
@@ -54,7 +68,18 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
     [router, pathname, searchParams],
   )
 
+  const onSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value)
+      clearTimeout(searchTimer.current)
+      searchTimer.current = setTimeout(() => updateParam('q', value.trim()), 350)
+    },
+    [updateParam],
+  )
+
   const clearFilters = useCallback(() => {
+    clearTimeout(searchTimer.current)
+    setSearchValue('')
     router.replace(pathname)
   }, [router, pathname])
 
@@ -65,8 +90,8 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
         <Input
           placeholder={t('search_placeholder')}
           className="pl-9"
-          defaultValue={searchParams.get('q') ?? ''}
-          onChange={(e) => updateParam('q', e.target.value)}
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
