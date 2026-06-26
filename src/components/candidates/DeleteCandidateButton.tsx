@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -69,7 +70,7 @@ export function DeleteCandidateButton({
         </Button>
       )}
 
-      {open && (
+      {open && typeof document !== 'undefined' && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           onClick={() => !isPending && setOpen(false)}
@@ -119,7 +120,8 @@ export function DeleteCandidateButton({
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

@@ -46,7 +46,7 @@ export const translations = {
     action_delete: 'Delete',
     action_view: 'View Profile',
     // Resume
-    download_resume: 'Baixar Currículo',
+    download_resume: 'Download Resume',
     // Delete confirmation
     delete_title: 'Delete candidate?',
     delete_body: 'This permanently removes this candidate and all internal notes. This action cannot be undone.',
