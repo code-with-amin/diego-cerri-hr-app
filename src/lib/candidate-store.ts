@@ -24,6 +24,7 @@ interface BackendListItem {
   email: string
   phone: string
   city: string
+  state: string | null
   seniority: string | null
   hourlyRate: string
   status: BackendStatus
@@ -36,6 +37,7 @@ interface BackendDetail {
   email: string
   phone: string
   city: string
+  state: string | null
   country: string | null
   linkedinUrl: string | null
   birthDate: string | null
@@ -77,6 +79,7 @@ function mapListItem(item: BackendListItem): Candidate {
     email: item.email,
     phone: item.phone,
     city: item.city,
+    state: item.state ?? undefined,
     employmentTypes: [],
     hoursPerDay: 0,
     travelAvailability: '',
@@ -100,6 +103,7 @@ function mapDetail(c: BackendDetail): Candidate {
     email: c.email,
     phone: c.phone,
     city: c.city,
+    state: c.state ?? undefined,
     country: c.country ?? undefined,
     linkedIn: c.linkedinUrl ?? undefined,
     birthDate: c.birthDate ? c.birthDate.slice(0, 10) : undefined,
@@ -142,6 +146,7 @@ interface ListParams {
   q?: string
   status?: CandidateStatus | string
   dateFrom?: string
+  dateTo?: string
   page?: number
   limit?: number
 }
@@ -153,6 +158,13 @@ export async function getCandidates(params: ListParams = {}): Promise<Candidates
     qs.set('status', STATUS_TO_BACKEND[params.status as CandidateStatus])
   }
   if (params.dateFrom) qs.set('dateFrom', params.dateFrom)
+  if (params.dateTo) {
+    // Make the upper bound inclusive of the entire selected day.
+    const to = /^\d{4}-\d{2}-\d{2}$/.test(params.dateTo)
+      ? `${params.dateTo}T23:59:59.999`
+      : params.dateTo
+    qs.set('dateTo', to)
+  }
   if (params.page) qs.set('page', String(params.page))
   if (params.limit) qs.set('limit', String(params.limit))
 
@@ -191,4 +203,8 @@ export async function updateCandidateStatus(id: string, status: CandidateStatus)
     method: 'PATCH',
     body: JSON.stringify({ status: STATUS_TO_BACKEND[status] }),
   })
+}
+
+export async function deleteCandidate(id: string): Promise<void> {
+  await apiFetch(`/candidates/${id}`, { method: 'DELETE' })
 }

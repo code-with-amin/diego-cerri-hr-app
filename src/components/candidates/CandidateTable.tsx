@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Candidate } from '@/lib/types'
 import { StatusSelector } from './StatusSelector'
+import { DeleteCandidateButton } from './DeleteCandidateButton'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 
 interface CandidateTableProps {
@@ -86,12 +87,18 @@ export function CandidateTable({ candidates, startIndex = 1 }: CandidateTablePro
                   })}
                 </TableCell>
                 <TableCell>
-                  <Link
-                    href={`/dashboard/candidates/${candidate.id}`}
-                    className={buttonVariants({ variant: 'default', size: 'sm' })}
-                  >
-                    {t('btn_view_profile')}
-                  </Link>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Link
+                      href={`/dashboard/candidates/${candidate.id}`}
+                      className={buttonVariants({ variant: 'default', size: 'sm' })}
+                    >
+                      {t('btn_view_profile')}
+                    </Link>
+                    <DeleteCandidateButton
+                      candidateId={candidate.id}
+                      candidateName={candidate.fullName}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

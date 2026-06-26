@@ -1,6 +1,7 @@
 'use client'
 
-import { Menu } from 'lucide-react'
+import { Menu, ArrowLeft } from 'lucide-react'
+import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -14,7 +15,10 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
-  const { lang, setLang } = useLanguage()
+  const { lang, setLang, t } = useLanguage()
+  const router = useRouter()
+  const pathname = usePathname()
+  const showBack = pathname !== '/dashboard'
 
   return (
     <>
@@ -29,6 +33,18 @@ export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
+            </Button>
+          )}
+          {showBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-shrink-0 gap-1.5 text-muted-foreground hover:text-foreground -ml-1"
+              onClick={() => router.back()}
+              aria-label={t('btn_back')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('btn_back')}</span>
             </Button>
           )}
           <div className="min-w-0">

@@ -14,11 +14,12 @@ export function LoginCard({ hasError }: { hasError: boolean }) {
   return (
     <div className="w-full max-w-sm">
       <div className="flex items-center justify-between mb-8">
-        <div className="flex justify-center items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-m">
-            KPI
-          </div>
-          <h1 className="text-xl text-primary-foreground font-semibold">{t('login_portal')}</h1>
+        <div className="flex flex-col items-start gap-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="KPI Engenharia" className="h-9 w-auto" />
+          <span className="text-sm text-primary-foreground/80 font-medium pl-0.5">
+            {t('login_portal')}
+          </span>
         </div>
         <div className="flex items-center rounded-lg border border-primary-foreground/30 overflow-hidden text-xs font-semibold">
           {(['en', 'pt'] as Language[]).map((l) => (

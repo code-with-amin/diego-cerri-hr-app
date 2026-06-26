@@ -50,6 +50,7 @@ export function CandidateDetailContent({ candidate, notes }: CandidateDetailCont
               { label: t('field_email'), value: candidate.email },
               { label: t('field_phone'), value: candidate.phone },
               { label: t('field_location'), value: candidate.city },
+              { label: t('field_state'), value: candidate.state },
               { label: t('field_country'), value: candidate.country },
               { label: t('field_linkedin'), value: candidate.linkedIn },
               { label: t('field_birth_date'), value: candidate.birthDate },
@@ -128,7 +129,7 @@ export function CandidateDetailContent({ candidate, notes }: CandidateDetailCont
                   >
                     <Button variant="default" size="lg" className="w-full">
                       <FileText className="mr-2 h-4 w-4" />
-                      Download Resume
+                      {t('download_resume')}
                     </Button>
                   </a>
                 </>

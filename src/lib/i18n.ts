@@ -36,6 +36,24 @@ export const translations = {
     // Search / filter
     search_placeholder: 'Search by name or email…',
     filter_all: 'All',
+    filter_date_from: 'From date',
+    filter_date_to: 'To date',
+    filter_pick_date: 'Pick a date',
+    filter_clear: 'Clear',
+    // Navigation
+    btn_back: 'Back',
+    // Table actions
+    action_delete: 'Delete',
+    action_view: 'View Profile',
+    // Resume
+    download_resume: 'Baixar Currículo',
+    // Delete confirmation
+    delete_title: 'Delete candidate?',
+    delete_body: 'This permanently removes this candidate and all internal notes. This action cannot be undone.',
+    delete_cancel: 'Cancel',
+    delete_confirm: 'Delete',
+    delete_deleting: 'Deleting…',
+    delete_error: 'Failed to delete candidate.',
     // Dashboard latest section
     latest_candidates: 'Latest Candidates',
     view_all: 'View all',
@@ -53,7 +71,8 @@ export const translations = {
     field_full_name: 'Full Name',
     field_email: 'Email',
     field_phone: 'Phone / WhatsApp',
-    field_location: 'City / State',
+    field_location: 'City',
+    field_state: 'State',
     field_country: 'Country',
     field_linkedin: 'LinkedIn / Portfolio',
     field_birth_date: 'Date of Birth',
@@ -129,6 +148,24 @@ export const translations = {
     btn_view_profile: 'Ver Perfil',
     search_placeholder: 'Pesquisar por nome ou e-mail…',
     filter_all: 'Todos',
+    filter_date_from: 'Data inicial',
+    filter_date_to: 'Data final',
+    filter_pick_date: 'Escolher data',
+    filter_clear: 'Limpar',
+    // Navigation
+    btn_back: 'Voltar',
+    // Table actions
+    action_delete: 'Excluir',
+    action_view: 'Ver Perfil',
+    // Resume
+    download_resume: 'Baixar Currículo',
+    // Delete confirmation
+    delete_title: 'Excluir candidato?',
+    delete_body: 'Isto remove permanentemente este candidato e todas as notas internas. Esta ação não pode ser desfeita.',
+    delete_cancel: 'Cancelar',
+    delete_confirm: 'Excluir',
+    delete_deleting: 'Excluindo…',
+    delete_error: 'Falha ao excluir candidato.',
     latest_candidates: 'Candidatos Recentes',
     view_all: 'Ver todos',
     back_to_candidates: 'Voltar para candidatos',
@@ -142,7 +179,8 @@ export const translations = {
     field_full_name: 'Nome Completo',
     field_email: 'E-mail',
     field_phone: 'Telefone / WhatsApp',
-    field_location: 'Cidade / Estado',
+    field_location: 'Cidade',
+    field_state: 'Estado',
     field_country: 'País',
     field_linkedin: 'LinkedIn / Portfólio',
     field_birth_date: 'Data de Nascimento',

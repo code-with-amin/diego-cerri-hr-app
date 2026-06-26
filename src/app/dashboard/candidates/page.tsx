@@ -9,7 +9,14 @@ const VALID_PAGE_SIZES = [10, 25, 50, 100]
 const DEFAULT_PAGE_SIZE = 10
 
 interface CandidatesPageProps {
-  searchParams: { q?: string; status?: string; date?: string; page?: string; perPage?: string }
+  searchParams: {
+    q?: string
+    status?: string
+    dateFrom?: string
+    dateTo?: string
+    page?: string
+    perPage?: string
+  }
 }
 
 export default async function CandidatesPage({ searchParams }: CandidatesPageProps) {
@@ -20,7 +27,8 @@ export default async function CandidatesPage({ searchParams }: CandidatesPagePro
   const { candidates, total } = await getCandidates({
     q: searchParams.q,
     status: searchParams.status,
-    dateFrom: searchParams.date,
+    dateFrom: searchParams.dateFrom,
+    dateTo: searchParams.dateTo,
     page,
     limit: pageSize,
   })

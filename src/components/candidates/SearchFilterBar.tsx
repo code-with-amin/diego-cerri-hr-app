@@ -28,12 +28,16 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { t } = useLanguage()
-  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [fromOpen, setFromOpen] = useState(false)
+  const [toOpen, setToOpen] = useState(false)
 
-  const dateParam = searchParams.get('date')
-  const selectedDate = dateParam ? parseISO(dateParam) : undefined
+  const fromParam = searchParams.get('dateFrom')
+  const toParam = searchParams.get('dateTo')
+  const fromDate = fromParam ? parseISO(fromParam) : undefined
+  const toDate = toParam ? parseISO(toParam) : undefined
 
-  const hasFilters = searchParams.get('q') || searchParams.get('status') || dateParam
+  const hasFilters =
+    searchParams.get('q') || searchParams.get('status') || fromParam || toParam
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -43,6 +47,8 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
       } else {
         params.delete(key)
       }
+      // Reset to the first page whenever a filter changes.
+      params.delete('page')
       router.replace(`${pathname}?${params.toString()}`)
     },
     [router, pathname, searchParams],
@@ -80,27 +86,57 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
         </SelectContent>
       </Select>
 
-      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <PopoverTrigger
-          className={cn(
-            'flex h-8 w-[160px] items-center justify-start rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors hover:bg-accent hover:text-accent-foreground font-normal',
-            !selectedDate && 'text-muted-foreground',
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'Pick a date'}
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => {
-              updateParam('date', date ? format(date, 'yyyy-MM-dd') : '')
-              setCalendarOpen(false)
-            }}
-          />
-        </PopoverContent>
-      </Popover>
+      <div className="flex items-center gap-1.5">
+        <Popover open={fromOpen} onOpenChange={setFromOpen}>
+          <PopoverTrigger
+            className={cn(
+              'flex h-8 w-[150px] items-center justify-start rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors hover:bg-accent hover:text-accent-foreground font-normal',
+              !fromDate && 'text-muted-foreground',
+            )}
+            aria-label={t('filter_date_from')}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+            {fromDate ? format(fromDate, 'dd/MM/yyyy') : t('filter_date_from')}
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={fromDate}
+              disabled={toDate ? { after: toDate } : undefined}
+              onSelect={(date) => {
+                updateParam('dateFrom', date ? format(date, 'yyyy-MM-dd') : '')
+                setFromOpen(false)
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+
+        <span className="text-muted-foreground text-sm">→</span>
+
+        <Popover open={toOpen} onOpenChange={setToOpen}>
+          <PopoverTrigger
+            className={cn(
+              'flex h-8 w-[150px] items-center justify-start rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors hover:bg-accent hover:text-accent-foreground font-normal',
+              !toDate && 'text-muted-foreground',
+            )}
+            aria-label={t('filter_date_to')}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+            {toDate ? format(toDate, 'dd/MM/yyyy') : t('filter_date_to')}
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={toDate}
+              disabled={fromDate ? { before: fromDate } : undefined}
+              onSelect={(date) => {
+                updateParam('dateTo', date ? format(date, 'yyyy-MM-dd') : '')
+                setToOpen(false)
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
 
       {hasFilters && (
         <Button
@@ -110,7 +146,7 @@ export function SearchFilterBar({ total, filtered }: SearchFilterBarProps) {
           className="gap-1.5 text-muted-foreground hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" />
-          Clear
+          {t('filter_clear')}
         </Button>
       )}
 
