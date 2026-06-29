@@ -2,11 +2,11 @@
 
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
+import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import {
   Select,
   SelectContent,
@@ -26,129 +26,156 @@ const ACTIVITIES: TranslationKey[] = [
   'emp_activity_support',
 ]
 
-const TIME_FIELDS: { key: TranslationKey; id: string }[] = [
-  { key: 'emp_time_start', id: 'time-start' },
-  { key: 'emp_time_break_in', id: 'time-break-in' },
-  { key: 'emp_time_break_out', id: 'time-break-out' },
-  { key: 'emp_time_end', id: 'time-end' },
-]
-
 export function ActivityForm() {
   const { t } = useLanguage()
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      {/* Project + Client */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="project">{t('emp_project')}</Label>
-          <Select>
-            <SelectTrigger id="project" className="w-full">
-              <SelectValue placeholder="—" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="proj-alpha">Project Alpha</SelectItem>
-              <SelectItem value="proj-beta">Project Beta</SelectItem>
-            </SelectContent>
-          </Select>
+    <Card className="py-0">
+      <form className="space-y-6 p-6">
+        {/* Panel header */}
+        <div>
+          <h3 className="text-lg font-semibold leading-tight">{t('emp_form_title')}</h3>
+          <p className="text-sm text-muted-foreground">{t('emp_form_desc')}</p>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="client">{t('emp_client')}</Label>
-          <Input id="client" placeholder="—" readOnly />
-        </div>
-      </div>
 
-      {/* Activity */}
-      <div className="space-y-1.5">
-        <Label htmlFor="activity">{t('emp_activity')}</Label>
-        <Select>
-          <SelectTrigger id="activity" className="w-full">
-            <SelectValue placeholder="—" />
-          </SelectTrigger>
-          <SelectContent>
-            {ACTIVITIES.map((key) => (
-              <SelectItem key={key} value={key}>
-                {t(key)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Rate + Location + Entry type */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="rate">{t('emp_hourly_rate')}</Label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
-              R$
-            </span>
-            <Input id="rate" className="pl-8" placeholder="0,00" />
+        {/* Project + Client */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="project">{t('emp_project')}</Label>
+            <Input id="project" placeholder="—" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="client">{t('emp_client')}</Label>
+            <Input id="client" placeholder="—" />
           </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="location">{t('emp_location')}</Label>
-          <Select>
-            <SelectTrigger id="location" className="w-full">
-              <SelectValue placeholder="—" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="remote">{t('emp_location_remote')}</SelectItem>
-              <SelectItem value="office">{t('emp_location_office')}</SelectItem>
-              <SelectItem value="client">{t('emp_location_client')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="entry-type">{t('emp_entry_type')}</Label>
-          <Select>
-            <SelectTrigger id="entry-type" className="w-full">
-              <SelectValue placeholder="—" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="productive">{t('emp_type_productive')}</SelectItem>
-              <SelectItem value="admin">{t('emp_type_admin')}</SelectItem>
-              <SelectItem value="nonbillable">{t('emp_type_nonbillable')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      {/* Retroactive time entry */}
-      <div className="space-y-3">
-        <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-          {t('emp_time_optional')}
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {TIME_FIELDS.map(({ key, id }) => (
-            <div key={id} className="space-y-1.5">
-              <Label htmlFor={id}>{t(key)}</Label>
-              <Input id={id} type="time" />
+        {/* Activity + Rate */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="activity">{t('emp_activity')}</Label>
+            <Select>
+              <SelectTrigger id="activity" className="w-full">
+                <SelectValue placeholder={t('emp_activity_placeholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTIVITIES.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {t(key)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rate">{t('emp_hourly_rate')}</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                R$
+              </span>
+              <Input id="rate" className="pl-8" placeholder="0,00" />
             </div>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Observations */}
-      <div className="space-y-1.5">
-        <Label htmlFor="observations">{t('emp_observations')}</Label>
-        <Textarea id="observations" rows={3} placeholder="—" />
-      </div>
+        {/* Location + Entry type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="location">{t('emp_location')}</Label>
+            <Select>
+              <SelectTrigger id="location" className="w-full">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="remote">{t('emp_location_remote')}</SelectItem>
+                <SelectItem value="office">{t('emp_location_office')}</SelectItem>
+                <SelectItem value="client">{t('emp_location_client')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="entry-type">{t('emp_entry_type')}</Label>
+            <Select>
+              <SelectTrigger id="entry-type" className="w-full">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="productive">{t('emp_type_productive')}</SelectItem>
+                <SelectItem value="admin">{t('emp_type_admin')}</SelectItem>
+                <SelectItem value="nonbillable">{t('emp_type_nonbillable')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-      <Separator />
+        {/* Retroactive start (highlighted note block) */}
+        <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
+          <Label htmlFor="retro-start">{t('emp_retro_start')}</Label>
+          <Input id="retro-start" type="datetime-local" />
+          <p className="text-xs text-muted-foreground">{t('emp_retro_start_hint')}</p>
+        </div>
 
-      {/* Action buttons */}
-      <div className="flex flex-wrap gap-3">
-        <Button>{t('emp_btn_start')}</Button>
-        <Button variant="outline">{t('emp_btn_break')}</Button>
-        <Button variant="outline">{t('emp_btn_resume')}</Button>
-        <Button
-          variant="outline"
-          className="text-destructive border-destructive hover:bg-destructive/10"
-        >
-          {t('emp_btn_end')}
-        </Button>
-      </div>
-    </div>
+        {/* Break start / Break end / Retroactive end */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="break-start">{t('emp_break_start')}</Label>
+            <Input id="break-start" type="datetime-local" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="break-end">{t('emp_break_end')}</Label>
+            <Input id="break-end" type="datetime-local" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="retro-end">{t('emp_retro_end')}</Label>
+            <Input id="retro-end" type="datetime-local" />
+          </div>
+        </div>
+
+        {/* Registered start / end (readonly) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="registered-start">{t('emp_registered_start')}</Label>
+            <Input id="registered-start" placeholder="—" readOnly />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="registered-end">{t('emp_registered_end')}</Label>
+            <Input id="registered-end" placeholder="—" readOnly />
+          </div>
+        </div>
+
+        {/* Project cost / break summary (readonly) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="project-cost">{t('emp_project_cost')}</Label>
+            <Input id="project-cost" placeholder="R$ 0,00" readOnly />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="break-summary">{t('emp_break_summary')}</Label>
+            <Input id="break-summary" placeholder="—" readOnly />
+          </div>
+        </div>
+
+        {/* Observations */}
+        <div className="space-y-1.5">
+          <Label htmlFor="observations">{t('emp_observations')}</Label>
+          <Textarea id="observations" rows={3} placeholder="—" />
+          <p className="text-xs text-muted-foreground">{t('emp_obs_hint')}</p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-3">
+          <Button type="button">{t('emp_btn_start')}</Button>
+          <Button type="button" variant="outline" disabled>
+            {t('emp_btn_break')}
+          </Button>
+          <Button type="button" variant="outline" disabled>
+            {t('emp_btn_resume')}
+          </Button>
+          <Button type="button" variant="destructive" disabled>
+            {t('emp_btn_end')}
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }
