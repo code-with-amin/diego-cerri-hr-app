@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
 import { Card } from '@/components/ui/card'
@@ -8,6 +10,7 @@ const TIPS: TranslationKey[] = ['emp_tip_1', 'emp_tip_2', 'emp_tip_3']
 
 export function TrackerSidebar() {
   const { t } = useLanguage()
+  const pathname = usePathname()
 
   return (
     <aside className="border-b lg:border-b-0 lg:border-r bg-card/60 p-4 md:p-6 flex flex-col gap-6">
@@ -36,7 +39,17 @@ export function TrackerSidebar() {
             {t('emp_shortcuts')}
           </p>
           <nav className="grid gap-2">
-            <NavItem label={t('emp_nav_tracking')} value={t('emp_nav_today')} active />
+            <NavItem
+              label={t('emp_nav_dashboard')}
+              href="/employee/dashboard"
+              active={pathname === '/employee/dashboard'}
+            />
+            <NavItem
+              label={t('emp_nav_tracking')}
+              value={t('emp_nav_today')}
+              href="/employee/tracker"
+              active={pathname === '/employee/tracker'}
+            />
             <NavItem label={t('emp_nav_breaks')} value="0" />
             <NavItem label={t('emp_nav_history')} value="0" />
           </nav>
@@ -58,18 +71,39 @@ export function TrackerSidebar() {
   )
 }
 
-function NavItem({ label, value, active }: { label: string; value: string; active?: boolean }) {
-  return (
-    <button
-      type="button"
-      className={`flex min-h-11 items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm transition-colors ${
-        active
-          ? 'border-primary/30 bg-primary/10 font-semibold'
-          : 'border-transparent hover:bg-muted'
-      }`}
-    >
+function NavItem({
+  label,
+  value,
+  href,
+  active,
+}: {
+  label: string
+  value?: string
+  href?: string
+  active?: boolean
+}) {
+  const className = `flex min-h-11 items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm transition-colors ${
+    active ? 'border-primary/30 bg-primary/10 font-semibold' : 'border-transparent hover:bg-muted'
+  }`
+
+  const content = (
+    <>
       <span>{label}</span>
-      <span className="text-xs text-muted-foreground">{value}</span>
+      {value ? <span className="text-xs text-muted-foreground">{value}</span> : null}
+    </>
+  )
+
+  if (href) {
+    return (
+      <Link href={href} className={className} aria-current={active ? 'page' : undefined}>
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <button type="button" className={className}>
+      {content}
     </button>
   )
 }
