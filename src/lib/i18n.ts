@@ -151,7 +151,7 @@ export const translations = {
     emp_activity_placeholder: 'Select the activity',
     // Tracker layout
     emp_brand_name: 'PontoFlow',
-    emp_brand_tagline: 'Hour & activity tracking',
+    emp_brand_tagline: 'Time and activity tracking',
     emp_user_connected: 'Connected user',
     emp_awaiting_login: 'Awaiting login',
     emp_identify_start: 'Identify yourself to begin.',

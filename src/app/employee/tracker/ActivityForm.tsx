@@ -227,16 +227,39 @@ export function ActivityForm() {
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-3">
-          <Button type="button" disabled={!isIdle} onClick={startSession}>
+          <Button
+            type="button"
+            disabled={!isIdle}
+            onClick={startSession}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
             {t('emp_btn_start')}
           </Button>
-          <Button type="button" variant="outline" disabled={!isRunning} onClick={startBreak}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isRunning}
+            onClick={startBreak}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
             {t('emp_btn_break')}
           </Button>
-          <Button type="button" variant="outline" disabled={!isPaused} onClick={resumeSession}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isPaused}
+            onClick={resumeSession}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
             {t('emp_btn_resume')}
           </Button>
-          <Button type="button" variant="destructive" disabled={isIdle} onClick={endSession}>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isIdle}
+            onClick={endSession}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
             {t('emp_btn_end')}
           </Button>
         </div>

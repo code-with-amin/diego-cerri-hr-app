@@ -5,6 +5,7 @@ import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
 import { Language } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/employee/ThemeToggle'
 import { employeeLogoutAction } from '@/app/employee/login/actions'
 
 function useClock() {
@@ -54,6 +55,7 @@ export function TrackerTopbar() {
           <span className="text-muted-foreground">{t('emp_current_time')}:</span>
           <strong className="font-mono font-semibold tabular-nums">{clock}</strong>
         </div>
+        <ThemeToggle />
         <div className="hidden lg:flex items-center overflow-hidden rounded-lg border text-xs font-semibold">
           {(['en', 'pt'] as Language[]).map((l) => (
             <button

@@ -8,6 +8,7 @@ import { ActivityStats } from '@/components/employee/ActivityStats'
 import { HoursChart } from '@/components/employee/HoursChart'
 import { ActivityBreakdownChart } from '@/components/employee/ActivityBreakdownChart'
 import { RecentEntries } from '@/components/employee/RecentEntries'
+import { ThemeToggle } from '@/components/employee/ThemeToggle'
 import { employeeLogoutAction } from '../login/actions'
 
 export default function EmployeeDashboardPage() {
@@ -18,6 +19,7 @@ export default function EmployeeDashboardPage() {
       {/* Header */}
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-end gap-3">
+          <ThemeToggle />
           <div className="hidden lg:flex items-center overflow-hidden rounded-lg border text-xs font-semibold">
             {(['en', 'pt'] as Language[]).map((l) => (
               <button

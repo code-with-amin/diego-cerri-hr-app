@@ -19,10 +19,11 @@ export function TrackerSidebar() {
     <aside className="border-b lg:border-b-0 lg:border-r bg-card/60 p-4 md:p-6 flex flex-col gap-6">
       {/* Brand */}
       <div className="hidden lg:flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-xs">
-          KPI
-        </div>
-        <h1 className="text-md text-foreground font-semibold">{t('emp_portal')}</h1>
+          <svg viewBox="0 0 48 48" fill="none" aria-label="Logo do sistema de apontamento" className='size-12'><rect x="5" y="5" width="38" height="38" rx="12" stroke="currentColor" stroke-width="3"></rect><path d="M17 30V18h6.5c4 0 6.5 2.2 6.5 6s-2.5 6-6.5 6H17Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"></path><path d="M31 14v20" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div>
+            <h1 className='text-md font-semibold text-foreground'>{t('emp_brand_name')}</h1>
+            <p className='text-xs text-muted-foreground'>{t('emp_brand_tagline')}</p>
+          </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:gap-6">
@@ -52,10 +53,25 @@ export function TrackerSidebar() {
               href="/employee/tracker"
               active={pathname === '/employee/tracker'}
             />
-            <NavItem label={t('emp_nav_breaks')} value={String(breakCount)} />
-            <NavItem label={t('emp_nav_history')} value="6" />
           </nav>
         </div>
+
+        {/* Breaks & history summary */}
+        <Card size="sm" className="px-4 gap-3 sm:col-span-2 lg:col-span-1">
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center justify-between">
+              <span>{t('emp_nav_breaks')}</span>
+              <span className="text-xs text-muted-foreground">{breakCount}</span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              <hr className="my-1 border-t border-border" />
+            </span>
+            <div className="flex items-center justify-between">
+              <span>{t('emp_nav_history')}</span>
+              <span className="text-xs text-muted-foreground">6</span>
+            </div>
+          </div>
+        </Card>
 
         {/* Best practices */}
         <Card size="sm" className="px-4 gap-3 sm:col-span-2 lg:col-span-1">
@@ -78,14 +94,20 @@ function NavItem({
   value,
   href,
   active,
+  disabled,
 }: {
   label: string
   value?: string
   href?: string
   active?: boolean
+  disabled?: boolean
 }) {
   const className = `flex min-h-11 items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm transition-colors ${
-    active ? 'border-primary/30 bg-primary/10 font-semibold' : 'border-transparent hover:bg-muted'
+    disabled
+      ? 'border-border cursor-not-allowed text-muted-foreground'
+      : active
+        ? 'border-primary/30 bg-primary/10 font-semibold'
+        : 'border-transparent hover:bg-muted'
   }`
 
   const content = (
@@ -104,7 +126,7 @@ function NavItem({
   }
 
   return (
-    <button type="button" className={className}>
+    <button type="button" className={className} disabled={disabled}>
       {content}
     </button>
   )
