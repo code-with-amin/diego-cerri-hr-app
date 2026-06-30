@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
-import { Language } from '@/lib/i18n'
+import { Language, TranslationKey } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/employee/ThemeToggle'
 import { employeeLogoutAction } from '@/app/employee/login/actions'
@@ -24,7 +24,15 @@ function useClock() {
   return time
 }
 
-export function TrackerTopbar() {
+export function TrackerTopbar({
+  eyebrow = 'emp_daily_entry',
+  title = 'emp_page_title',
+  desc = 'emp_page_desc',
+}: {
+  eyebrow?: TranslationKey
+  title?: TranslationKey
+  desc?: TranslationKey
+} = {}) {
   const { lang, setLang, t } = useLanguage()
   const { timerStatus } = useTracker()
   const clock = useClock()
@@ -80,10 +88,10 @@ export function TrackerTopbar() {
       {/* Heading block */}
       <div className="space-y-1 max-w-prose">
         <span className="text-xs uppercase tracking-wide text-muted-foreground">
-          {t('emp_daily_entry')}
+          {t(eyebrow)}
         </span>
-        <h2 className="text-2xl font-semibold leading-tight">{t('emp_page_title')}</h2>
-        <p className="text-sm text-muted-foreground">{t('emp_page_desc')}</p>
+        <h2 className="text-2xl font-semibold leading-tight">{t(title)}</h2>
+        <p className="text-sm text-muted-foreground">{t(desc)}</p>
       </div>
     </header>
   )

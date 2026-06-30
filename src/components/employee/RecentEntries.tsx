@@ -14,8 +14,10 @@ import { Card } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
+import { MOCK_ENTRIES } from '@/data/employee-mock'
 
 const COLUMNS: TranslationKey[] = [
+  'emp_col_date',
   'emp_col_project',
   'emp_col_activity',
   'emp_col_start',
@@ -24,20 +26,7 @@ const COLUMNS: TranslationKey[] = [
   'emp_col_cost',
 ]
 
-// Representative sample data — swap for real entries once wired up.
-const ENTRIES: {
-  project: string
-  activityKey: TranslationKey
-  start: string
-  end: string
-  hours: string
-  cost: string
-}[] = [
-  { project: 'Linha 3 — Expansão', activityKey: 'emp_activity_bim', start: '08:30', end: '12:00', hours: '3.50 h', cost: 'R$ 420,00' },
-  { project: 'KPI Engenharia', activityKey: 'emp_activity_meeting', start: '13:00', end: '14:00', hours: '1.00 h', cost: 'R$ 120,00' },
-  { project: 'Retrofit Galpão B', activityKey: 'emp_activity_compat', start: '14:15', end: '16:45', hours: '2.50 h', cost: 'R$ 300,00' },
-  { project: 'Documentação OS-204', activityKey: 'emp_activity_docs', start: '17:00', end: '18:00', hours: '1.00 h', cost: 'R$ 120,00' },
-]
+const RECENT_ENTRIES = MOCK_ENTRIES.slice(0, 5)
 
 export function RecentEntries() {
   const { t } = useLanguage()
@@ -51,10 +40,10 @@ export function RecentEntries() {
             <p className="text-sm text-muted-foreground">{t('emp_recent_desc')}</p>
           </div>
           <Link
-            href="/employee/tracker"
+            href="/employee/entries"
             className={buttonVariants({ variant: 'ghost', size: 'sm' })}
           >
-            {t('emp_open_tracker')}
+            {t('emp_recent_view_all')}
             <ArrowRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </div>
@@ -70,13 +59,16 @@ export function RecentEntries() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ENTRIES.map((entry, i) => (
-                  <TableRow key={i}>
+                {RECENT_ENTRIES.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="tabular-nums text-muted-foreground">
+                      {entry.date}
+                    </TableCell>
                     <TableCell className="font-medium">{entry.project}</TableCell>
-                    <TableCell>{t(entry.activityKey)}</TableCell>
+                    <TableCell>{t(entry.activityKey as TranslationKey)}</TableCell>
                     <TableCell className="tabular-nums">{entry.start}</TableCell>
                     <TableCell className="tabular-nums">{entry.end}</TableCell>
-                    <TableCell className="tabular-nums">{entry.hours}</TableCell>
+                    <TableCell className="tabular-nums">{entry.netHours}</TableCell>
                     <TableCell className="tabular-nums">{entry.cost}</TableCell>
                   </TableRow>
                 ))}
