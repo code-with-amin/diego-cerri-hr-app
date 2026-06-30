@@ -3,6 +3,7 @@
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Language } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
+import { employeeLogoutAction } from '@/app/employee/login/actions'
 
 interface EmployeeHeaderProps {
   showSignOut?: boolean
@@ -37,7 +38,9 @@ export function EmployeeHeader({ showSignOut }: EmployeeHeaderProps) {
           ))}
         </div>
         {showSignOut && (
-          <Button variant="outline" size="sm">{t('emp_sign_out')}</Button>
+          <form action={employeeLogoutAction}>
+            <Button type="submit" variant="outline" size="sm">{t('emp_sign_out')}</Button>
+          </form>
         )}
       </div>
     </header>

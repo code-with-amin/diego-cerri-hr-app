@@ -169,6 +169,8 @@ export const translations = {
     emp_page_desc:
       'The form now lets you log retroactive start, break, resume and end times, and automatically calculates the project cost from the hourly rate.',
     emp_status_not_started: 'Not started',
+    emp_status_running: 'Running',
+    emp_status_paused: 'On break',
     emp_current_time: 'Current time',
     emp_form_title: 'Activity record',
     emp_form_desc:
@@ -180,6 +182,10 @@ export const translations = {
     emp_timeline_ready_title: 'Ready to start',
     emp_timeline_ready_desc:
       'After login, choose the activity and register a normal or retroactive start.',
+    emp_timeline_running_title: 'Session in progress',
+    emp_timeline_running_desc: 'Timer is running. Click Break to pause or End to finish.',
+    emp_timeline_paused_title: 'On break',
+    emp_timeline_paused_desc: 'Break in progress. Click Resume to continue the session.',
     emp_retro_start: 'Retroactive start',
     emp_retro_start_hint: 'If left blank, the system uses the current date and time when starting.',
     emp_break_start: 'Break start',
@@ -360,6 +366,8 @@ export const translations = {
     emp_page_desc:
       'Agora o formulário permite lançar horários retroativos de início, pausa, retomada e fim, além de calcular automaticamente o custo do projeto com base no valor por hora informado.',
     emp_status_not_started: 'Não iniciado',
+    emp_status_running: 'Em andamento',
+    emp_status_paused: 'Em pausa',
     emp_current_time: 'Tempo atual',
     emp_form_title: 'Registro da atividade',
     emp_form_desc:
@@ -371,6 +379,10 @@ export const translations = {
     emp_timeline_ready_title: 'Pronto para iniciar',
     emp_timeline_ready_desc:
       'Após o login, escolha a atividade e registre o início normal ou retroativo.',
+    emp_timeline_running_title: 'Sessão em andamento',
+    emp_timeline_running_desc: 'Timer rodando. Clique em Pausa para pausar ou Encerrar para finalizar.',
+    emp_timeline_paused_title: 'Em pausa',
+    emp_timeline_paused_desc: 'Pausa em andamento. Clique em Retomar para continuar a sessão.',
     emp_retro_start: 'Início retroativo',
     emp_retro_start_hint: 'Se deixar em branco, o sistema usa a data e hora atual ao iniciar.',
     emp_break_start: 'Início da pausa',

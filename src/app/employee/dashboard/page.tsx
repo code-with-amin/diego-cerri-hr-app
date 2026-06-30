@@ -8,6 +8,7 @@ import { ActivityStats } from '@/components/employee/ActivityStats'
 import { HoursChart } from '@/components/employee/HoursChart'
 import { ActivityBreakdownChart } from '@/components/employee/ActivityBreakdownChart'
 import { RecentEntries } from '@/components/employee/RecentEntries'
+import { employeeLogoutAction } from '../login/actions'
 
 export default function EmployeeDashboardPage() {
   const { lang, setLang, t } = useLanguage()
@@ -17,7 +18,6 @@ export default function EmployeeDashboardPage() {
       {/* Header */}
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-end gap-3">
-          {/* Lang + sign out — only on lg; smaller screens use the top header */}
           <div className="hidden lg:flex items-center overflow-hidden rounded-lg border text-xs font-semibold">
             {(['en', 'pt'] as Language[]).map((l) => (
               <button
@@ -32,9 +32,11 @@ export default function EmployeeDashboardPage() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" className="hidden lg:inline-flex">
-            {t('emp_sign_out')}
-          </Button>
+          <form action={employeeLogoutAction}>
+            <Button type="submit" variant="outline" size="sm" className="hidden lg:inline-flex">
+              {t('emp_sign_out')}
+            </Button>
+          </form>
         </div>
 
         <div className="space-y-1 max-w-prose">

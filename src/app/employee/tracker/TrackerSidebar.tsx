@@ -3,18 +3,21 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/components/providers/LanguageProvider'
+import { useTracker } from '@/components/providers/TrackerContext'
 import { TranslationKey } from '@/lib/i18n'
 import { Card } from '@/components/ui/card'
+import { MOCK_EMPLOYEE } from '@/data/employee-mock'
 
 const TIPS: TranslationKey[] = ['emp_tip_1', 'emp_tip_2', 'emp_tip_3']
 
 export function TrackerSidebar() {
   const { t } = useLanguage()
   const pathname = usePathname()
+  const { breakCount, timerStatus } = useTracker()
 
   return (
     <aside className="border-b lg:border-b-0 lg:border-r bg-card/60 p-4 md:p-6 flex flex-col gap-6">
-      {/* Brand — only on lg; mobile/tablet show it in the top header instead */}
+      {/* Brand */}
       <div className="hidden lg:flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-xs">
           KPI
@@ -22,15 +25,14 @@ export function TrackerSidebar() {
         <h1 className="text-md text-foreground font-semibold">{t('emp_portal')}</h1>
       </div>
 
-      {/* Content — single column on lg, responsive grid on smaller screens */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:gap-6">
         {/* Connected user */}
         <Card size="sm" className="px-4 gap-1">
           <span className="text-xs uppercase tracking-wide text-muted-foreground">
             {t('emp_user_connected')}
           </span>
-          <span className="font-bold tabular-nums">{t('emp_awaiting_login')}</span>
-          <p className="text-xs text-muted-foreground">{t('emp_identify_start')}</p>
+          <span className="font-bold">{MOCK_EMPLOYEE.name}</span>
+          <p className="text-xs text-muted-foreground">{MOCK_EMPLOYEE.role}</p>
         </Card>
 
         {/* Shortcuts */}
@@ -46,12 +48,12 @@ export function TrackerSidebar() {
             />
             <NavItem
               label={t('emp_nav_tracking')}
-              value={t('emp_nav_today')}
+              value={timerStatus !== 'idle' ? t('emp_status_running') : t('emp_nav_today')}
               href="/employee/tracker"
               active={pathname === '/employee/tracker'}
             />
-            <NavItem label={t('emp_nav_breaks')} value="0" />
-            <NavItem label={t('emp_nav_history')} value="0" />
+            <NavItem label={t('emp_nav_breaks')} value={String(breakCount)} />
+            <NavItem label={t('emp_nav_history')} value="6" />
           </nav>
         </div>
 
