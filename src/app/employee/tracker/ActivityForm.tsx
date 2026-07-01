@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { DateTimePicker } from '@/components/employee/DateTimePicker'
 import {
   Select,
   SelectContent,
@@ -159,11 +160,10 @@ export function ActivityForm() {
         {/* Retroactive start */}
         <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
           <Label htmlFor="retro-start">{t('emp_retro_start')}</Label>
-          <Input
+          <DateTimePicker
             id="retro-start"
-            type="datetime-local"
             value={retroStart}
-            onChange={(e) => setRetroStart(e.target.value)}
+            onChange={setRetroStart}
             disabled={!isIdle}
           />
           <p className="text-xs text-muted-foreground">{t('emp_retro_start_hint')}</p>
@@ -173,29 +173,27 @@ export function ActivityForm() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="break-start">{t('emp_break_start')}</Label>
-            <Input
+            <DateTimePicker
               id="break-start"
-              type="datetime-local"
               value={breakStartField}
-              onChange={(e) => setBreakStartField(e.target.value)}
+              onChange={setBreakStartField}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="break-end">{t('emp_break_end')}</Label>
-            <Input
+            <DateTimePicker
               id="break-end"
-              type="datetime-local"
               value={breakEndField}
-              onChange={(e) => setBreakEndField(e.target.value)}
+              onChange={setBreakEndField}
+              min={breakStartField}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="retro-end">{t('emp_retro_end')}</Label>
-            <Input
+            <DateTimePicker
               id="retro-end"
-              type="datetime-local"
               value={retroEnd}
-              onChange={(e) => setRetroEnd(e.target.value)}
+              onChange={setRetroEnd}
             />
           </div>
         </div>
