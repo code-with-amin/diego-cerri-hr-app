@@ -1,0 +1,269 @@
+'use client'
+
+import { useLanguage } from '@/components/providers/LanguageProvider'
+import { useTracker } from '@/components/providers/TrackerContext'
+import { TranslationKey } from '@/lib/i18n'
+import { Card } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const ACTIVITIES: TranslationKey[] = [
+  'emp_activity_bim',
+  'emp_activity_compat',
+  'emp_activity_docs',
+  'emp_activity_meeting',
+  'emp_activity_software',
+  'emp_activity_review',
+  'emp_activity_planning',
+  'emp_activity_support',
+]
+
+export function ActivityForm() {
+  const { t } = useLanguage()
+  const {
+    project, setProject,
+    client, setClient,
+    activityKey, setActivityKey,
+    rate, setRate,
+    location, setLocation,
+    entryType, setEntryType,
+    retroStart, setRetroStart,
+    breakStartField, setBreakStartField,
+    breakEndField, setBreakEndField,
+    retroEnd, setRetroEnd,
+    observations, setObservations,
+    registeredStart,
+    registeredEnd,
+    timerStatus,
+    startSession,
+    startBreak,
+    resumeSession,
+    endSession,
+  } = useTracker()
+
+  const isIdle = timerStatus === 'idle'
+  const isRunning = timerStatus === 'running'
+  const isPaused = timerStatus === 'paused'
+
+  return (
+    <Card className="py-0">
+      <form className="space-y-6 p-6" onSubmit={(e) => e.preventDefault()}>
+        {/* Panel header */}
+        <div>
+          <h3 className="text-lg font-semibold leading-tight">{t('emp_form_title')}</h3>
+          <p className="text-sm text-muted-foreground">{t('emp_form_desc')}</p>
+        </div>
+
+        {/* Project + Client */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="project">{t('emp_project')}</Label>
+            <Input
+              id="project"
+              placeholder="—"
+              value={project}
+              onChange={(e) => setProject(e.target.value)}
+              disabled={!isIdle}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="client">{t('emp_client')}</Label>
+            <Input
+              id="client"
+              placeholder="—"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+              disabled={!isIdle}
+            />
+          </div>
+        </div>
+
+        {/* Activity + Rate */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="activity">{t('emp_activity')}</Label>
+            <Select
+              value={activityKey}
+              onValueChange={(v) => setActivityKey(v ?? '')}
+              disabled={!isIdle}
+            >
+              <SelectTrigger id="activity" className="w-full">
+                <SelectValue placeholder={t('emp_activity_placeholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTIVITIES.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {t(key)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rate">{t('emp_hourly_rate')}</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                R$
+              </span>
+              <Input
+                id="rate"
+                className="pl-8"
+                placeholder="0,00"
+                value={rate}
+                onChange={(e) => setRate(e.target.value)}
+                disabled={!isIdle}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Location + Entry type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="location">{t('emp_location')}</Label>
+            <Select value={location} onValueChange={(v) => setLocation(v ?? '')} disabled={!isIdle}>
+              <SelectTrigger id="location" className="w-full">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="remote">{t('emp_location_remote')}</SelectItem>
+                <SelectItem value="office">{t('emp_location_office')}</SelectItem>
+                <SelectItem value="client">{t('emp_location_client')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="entry-type">{t('emp_entry_type')}</Label>
+            <Select value={entryType} onValueChange={(v) => setEntryType(v ?? '')} disabled={!isIdle}>
+              <SelectTrigger id="entry-type" className="w-full">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="productive">{t('emp_type_productive')}</SelectItem>
+                <SelectItem value="admin">{t('emp_type_admin')}</SelectItem>
+                <SelectItem value="nonbillable">{t('emp_type_nonbillable')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Retroactive start */}
+        <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
+          <Label htmlFor="retro-start">{t('emp_retro_start')}</Label>
+          <Input
+            id="retro-start"
+            type="datetime-local"
+            value={retroStart}
+            onChange={(e) => setRetroStart(e.target.value)}
+            disabled={!isIdle}
+          />
+          <p className="text-xs text-muted-foreground">{t('emp_retro_start_hint')}</p>
+        </div>
+
+        {/* Break start / Break end / Retroactive end */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="break-start">{t('emp_break_start')}</Label>
+            <Input
+              id="break-start"
+              type="datetime-local"
+              value={breakStartField}
+              onChange={(e) => setBreakStartField(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="break-end">{t('emp_break_end')}</Label>
+            <Input
+              id="break-end"
+              type="datetime-local"
+              value={breakEndField}
+              onChange={(e) => setBreakEndField(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="retro-end">{t('emp_retro_end')}</Label>
+            <Input
+              id="retro-end"
+              type="datetime-local"
+              value={retroEnd}
+              onChange={(e) => setRetroEnd(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Registered start / end (readonly) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="registered-start">{t('emp_registered_start')}</Label>
+            <Input id="registered-start" value={registeredStart} placeholder="—" readOnly />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="registered-end">{t('emp_registered_end')}</Label>
+            <Input id="registered-end" value={registeredEnd} placeholder="—" readOnly />
+          </div>
+        </div>
+
+        {/* Observations */}
+        <div className="space-y-1.5">
+          <Label htmlFor="observations">{t('emp_observations')}</Label>
+          <Textarea
+            id="observations"
+            rows={3}
+            placeholder="—"
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">{t('emp_obs_hint')}</p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-3">
+          <Button
+            type="button"
+            disabled={!isIdle}
+            onClick={startSession}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
+            {t('emp_btn_start')}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isRunning}
+            onClick={startBreak}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
+            {t('emp_btn_break')}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isPaused}
+            onClick={resumeSession}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
+            {t('emp_btn_resume')}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isIdle}
+            onClick={endSession}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
+            {t('emp_btn_end')}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  )
+}

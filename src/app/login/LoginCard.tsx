@@ -8,8 +8,9 @@ import { SubmitButton } from './SubmitButton'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Language } from '@/lib/i18n'
 
-export function LoginCard({ hasError }: { hasError: boolean }) {
+export function LoginCard({ hasError, variant = 'admin' }: { hasError: boolean; variant?: 'admin' | 'employee' }) {
   const { lang, setLang, t } = useLanguage()
+  const isEmployee = variant === 'employee'
 
   return (
     <div className="w-full max-w-sm">
@@ -18,7 +19,7 @@ export function LoginCard({ hasError }: { hasError: boolean }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="KPI Engenharia" className="h-9 w-auto" />
           <span className="text-sm text-primary-foreground/80 font-medium pl-0.5">
-            {t('login_portal')}
+            {isEmployee ? t('emp_portal') : t('login_portal')}
           </span>
         </div>
         <div className="flex items-center rounded-lg border border-primary-foreground/30 overflow-hidden text-xs font-semibold">
@@ -41,8 +42,8 @@ export function LoginCard({ hasError }: { hasError: boolean }) {
 
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-lg">{t('login_title')}</CardTitle>
-          <CardDescription>{t('login_description')}</CardDescription>
+          <CardTitle className="text-lg">{isEmployee ? t('emp_login_title') : t('login_title')}</CardTitle>
+          <CardDescription>{isEmployee ? t('emp_login_description') : t('login_description')}</CardDescription>
         </CardHeader>
         <CardContent>
           {hasError && (
@@ -78,7 +79,7 @@ export function LoginCard({ hasError }: { hasError: boolean }) {
         </CardContent>
       </Card>
 
-      <p className="mt-6 text-center text-xs text-primary-foreground">{t('login_restricted')}</p>
+      <p className="mt-6 text-center text-xs text-primary-foreground">{isEmployee ? t('emp_login_restricted') : t('login_restricted')}</p>
     </div>
   )
 }
