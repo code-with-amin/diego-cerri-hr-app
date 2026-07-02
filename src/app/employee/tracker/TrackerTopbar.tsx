@@ -3,10 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
-import { Language, TranslationKey } from '@/lib/i18n'
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/employee/ThemeToggle'
-import { employeeLogoutAction } from '@/app/employee/login/actions'
+import { TranslationKey } from '@/lib/i18n'
 
 function useClock() {
   const [time, setTime] = useState('')
@@ -33,7 +30,7 @@ export function TrackerTopbar({
   title?: TranslationKey
   desc?: TranslationKey
 } = {}) {
-  const { lang, setLang, t } = useLanguage()
+  const { t } = useLanguage()
   const { timerStatus } = useTracker()
   const clock = useClock()
 
@@ -63,26 +60,6 @@ export function TrackerTopbar({
           <span className="text-muted-foreground">{t('emp_current_time')}:</span>
           <strong className="font-mono font-semibold tabular-nums">{clock}</strong>
         </div>
-        <ThemeToggle />
-        <div className="hidden lg:flex items-center overflow-hidden rounded-lg border text-xs font-semibold">
-          {(['en', 'pt'] as Language[]).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLang(l)}
-              className={`px-2.5 py-1.5 transition-colors ${
-                lang === l ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-              }`}
-            >
-              {l.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <form action={employeeLogoutAction}>
-          <Button type="submit" variant="outline" size="sm" className="hidden lg:inline-flex">
-            {t('emp_sign_out')}
-          </Button>
-        </form>
       </div>
 
       {/* Heading block */}

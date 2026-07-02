@@ -127,4 +127,17 @@
   html {
     @apply font-sans;
   }
+  /* Browser autofill ignores the input's transparent background and paints it
+     white — override it so autofilled fields keep the theme colors (fixes the
+     white login inputs in dark mode). */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--foreground);
+    caret-color: var(--foreground);
+    -webkit-background-clip: text;
+    background-clip: text;
+    transition: background-color 9999s ease-in-out 0s;
+  }
 }

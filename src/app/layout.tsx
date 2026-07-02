@@ -22,7 +22,7 @@ export default async function RootLayout({
   const initialLang: Language = stored === "en" ? "en" : "pt";
 
   // Apply the persisted theme before first paint to avoid a light-mode flash on refresh.
-  const themeScript = `(function(){try{var s=localStorage.getItem('theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
+  const themeScript = `(function(){try{var s=localStorage.getItem('theme');var d = s ? s === 'dark' : false;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
 
   return (
     <html lang={initialLang} suppressHydrationWarning>

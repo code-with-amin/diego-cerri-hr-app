@@ -65,10 +65,10 @@ export default function EmployeeLoginPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8 gap-2">
           <div className="flex justify-center items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary-foreground font-bold text-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1765de] text-primary-foreground font-bold text-sm">
               KPI
             </div>
-            <h1 className="text-xl text-primary-foreground font-semibold">{t('emp_portal')}</h1>
+            <h1 className="text-xl text-foreground font-semibold">{t('emp_portal')}</h1>
           </div>
         </div>
 

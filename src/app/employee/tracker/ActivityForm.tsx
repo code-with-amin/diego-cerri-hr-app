@@ -43,6 +43,14 @@ const ENTRY_TYPE_LABELS: Record<string, TranslationKey> = {
   nonbillable: 'emp_type_nonbillable',
 }
 
+// Keep the hourly rate numeric: digits only, with at most one decimal
+// separator (accepts both "," and "." and normalizes to ",").
+function sanitizeRate(raw: string): string {
+  const cleaned = raw.replace(/[^\d.,]/g, '').replace(/[.]/g, ',')
+  const [whole, ...rest] = cleaned.split(',')
+  return rest.length ? `${whole},${rest.join('')}` : whole
+}
+
 export function ActivityForm() {
   const { t } = useLanguage()
   const {
@@ -87,7 +95,7 @@ export function ActivityForm() {
             <Label htmlFor="project">{t('emp_project')}</Label>
             <Input
               id="project"
-              placeholder="—"
+              placeholder={t('emp_project_ph')}
               value={project}
               onChange={(e) => setProject(e.target.value)}
               disabled={!isIdle}
@@ -97,7 +105,7 @@ export function ActivityForm() {
             <Label htmlFor="client">{t('emp_client')}</Label>
             <Input
               id="client"
-              placeholder="—"
+              placeholder={t('emp_client_ph')}
               value={client}
               onChange={(e) => setClient(e.target.value)}
               disabled={!isIdle}
@@ -139,10 +147,13 @@ export function ActivityForm() {
               <Input
                 id="rate"
                 className="pl-8"
-                placeholder="0,00"
+                placeholder={t('emp_rate_ph')}
                 value={rate}
-                onChange={(e) => setRate(e.target.value)}
+                onChange={(e) => setRate(sanitizeRate(e.target.value))}
                 disabled={!isIdle}
+                inputMode="decimal"
+                pattern="[0-9]*[.,]?[0-9]*"
+                autoComplete="off"
               />
             </div>
           </div>
@@ -154,11 +165,11 @@ export function ActivityForm() {
             <Label htmlFor="location">{t('emp_location')}</Label>
             <Select value={location} onValueChange={(v) => setLocation(v ?? '')} disabled={!isIdle}>
               <SelectTrigger id="location" className="w-full">
-                <SelectValue placeholder="—">
+                <SelectValue placeholder={t('emp_location_ph')}>
                   {(value) =>
                     value && LOCATION_LABELS[value as string]
                       ? t(LOCATION_LABELS[value as string])
-                      : '—'
+                      : t('emp_location_ph')
                   }
                 </SelectValue>
               </SelectTrigger>
@@ -173,11 +184,11 @@ export function ActivityForm() {
             <Label htmlFor="entry-type">{t('emp_entry_type')}</Label>
             <Select value={entryType} onValueChange={(v) => setEntryType(v ?? '')} disabled={!isIdle}>
               <SelectTrigger id="entry-type" className="w-full">
-                <SelectValue placeholder="—">
+                <SelectValue placeholder={t('emp_type_ph')}>
                   {(value) =>
                     value && ENTRY_TYPE_LABELS[value as string]
                       ? t(ENTRY_TYPE_LABELS[value as string])
-                      : '—'
+                      : t('emp_type_ph')
                   }
                 </SelectValue>
               </SelectTrigger>
@@ -234,15 +245,33 @@ export function ActivityForm() {
           </div>
         </div>
 
-        {/* Registered start / end (readonly) */}
+        {/* Registered start / end — auto-filled, read-only (visually distinct) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="registered-start">{t('emp_registered_start')}</Label>
-            <Input id="registered-start" value={registeredStart} placeholder="—" readOnly />
+            <Label htmlFor="registered-start" className="text-muted-foreground">
+              {t('emp_registered_start')}
+            </Label>
+            <Input
+              id="registered-start"
+              value={registeredStart}
+              placeholder=""
+              readOnly
+              tabIndex={-1}
+              className="border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
+            />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="registered-end">{t('emp_registered_end')}</Label>
-            <Input id="registered-end" value={registeredEnd} placeholder="—" readOnly />
+            <Label htmlFor="registered-end" className="text-muted-foreground">
+              {t('emp_registered_end')}
+            </Label>
+            <Input
+              id="registered-end"
+              value={registeredEnd}
+              placeholder=""
+              readOnly
+              tabIndex={-1}
+              className="border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
+            />
           </div>
         </div>
 
@@ -252,7 +281,7 @@ export function ActivityForm() {
           <Textarea
             id="observations"
             rows={3}
-            placeholder="—"
+            placeholder={t('emp_obs_ph')}
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
           />
@@ -266,49 +295,54 @@ export function ActivityForm() {
           </p>
         )}
 
-        {/* Action buttons */}
-        <div className="flex flex-wrap gap-3">
+        {/* Action buttons — single line on wide screens; wrap (never hide) when cramped */}
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
+            size="sm"
             disabled={!isIdle}
             onClick={startSession}
-            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
           >
             {t('emp_btn_start')}
           </Button>
           <Button
             type="button"
+            size="sm"
             variant="outline"
             disabled={!isRunning}
             onClick={startBreak}
-            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
           >
             {t('emp_btn_break')}
           </Button>
           <Button
             type="button"
+            size="sm"
             variant="outline"
             disabled={!isPaused}
             onClick={resumeSession}
-            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
           >
             {t('emp_btn_resume')}
           </Button>
           <Button
             type="button"
+            size="sm"
             variant="destructive"
             disabled={isIdle}
             onClick={endSession}
-            className="disabled:pointer-events-auto disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
           >
             {t('emp_btn_end')}
           </Button>
           <Button
             type="button"
+            size="sm"
             variant="outline"
             disabled={!isIdle}
             onClick={saveManualEntry}
-            className="border-primary text-primary hover:bg-primary/10 hover:text-primary disabled:pointer-events-auto disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap border-primary text-primary hover:bg-primary/10 hover:text-primary disabled:pointer-events-auto disabled:cursor-not-allowed"
           >
             {t('emp_btn_manual_save')}
           </Button>

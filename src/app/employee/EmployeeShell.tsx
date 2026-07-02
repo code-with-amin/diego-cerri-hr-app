@@ -14,6 +14,8 @@ export function EmployeeShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState<boolean>(
     () => typeof window !== 'undefined' && localStorage.getItem(SIDEBAR_KEY) === 'true',
   )
+  // Off-canvas drawer state for mobile & tablet (below lg).
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   function setCollapsedPersist(value: boolean) {
     setCollapsed(value)
@@ -27,11 +29,22 @@ export function EmployeeShell({ children }: { children: React.ReactNode }) {
           collapsed ? 'lg:grid-cols-[80px_1fr]' : 'lg:grid-cols-[320px_1fr]'
         }`}
       >
-        {/* Top header — mobile & tablet only; on lg the sidebar carries the brand */}
-        <div className="lg:hidden">
-          <EmployeeHeader showSignOut />
-        </div>
-        <TrackerSidebar collapsed={collapsed} onToggle={() => setCollapsedPersist(!collapsed)} />
+        {/* Backdrop behind the mobile drawer */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden
+          />
+        )}
+
+        {/* Full-height sidebar (col 1 on lg) — reaches the very top */}
+        <TrackerSidebar
+          collapsed={collapsed}
+          onToggle={() => setCollapsedPersist(!collapsed)}
+          mobileOpen={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+        />
 
         {/* Floating expand button — sits on the collapsed sidebar's right edge */}
         {collapsed && (
@@ -46,7 +59,11 @@ export function EmployeeShell({ children }: { children: React.ReactNode }) {
           </button>
         )}
 
-        <main className="p-4 md:p-6 space-y-6">{children}</main>
+        {/* Right column (col 2 on lg): top bar stacked over the page content */}
+        <div className="flex min-w-0 flex-col">
+          <EmployeeHeader showSignOut onMenuClick={() => setMobileOpen(true)} />
+          <main className="p-4 md:p-6 space-y-6">{children}</main>
+        </div>
       </div>
     </TrackerProvider>
   )
