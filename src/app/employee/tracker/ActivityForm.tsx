@@ -18,6 +18,31 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+const ACTIVITIES: TranslationKey[] = [
+  'emp_activity_bim',
+  'emp_activity_compat',
+  'emp_activity_docs',
+  'emp_activity_meeting',
+  'emp_activity_software',
+  'emp_activity_review',
+  'emp_activity_planning',
+  'emp_activity_support',
+]
+
+// Maps a stored select value to its translation key so the trigger shows the
+// human label (Base UI's Select.Value otherwise renders the raw value).
+const LOCATION_LABELS: Record<string, TranslationKey> = {
+  remote: 'emp_location_remote',
+  office: 'emp_location_office',
+  client: 'emp_location_client',
+}
+
+const ENTRY_TYPE_LABELS: Record<string, TranslationKey> = {
+  productive: 'emp_type_productive',
+  admin: 'emp_type_admin',
+  nonbillable: 'emp_type_nonbillable',
+}
+
 export function ActivityForm() {
   const { t } = useLanguage()
   const {
@@ -35,10 +60,12 @@ export function ActivityForm() {
     registeredStart,
     registeredEnd,
     timerStatus,
+    error,
     startSession,
     startBreak,
     resumeSession,
     endSession,
+    saveManualEntry,
   } = useTracker()
 
   const isIdle = timerStatus === 'idle'
@@ -127,7 +154,13 @@ export function ActivityForm() {
             <Label htmlFor="location">{t('emp_location')}</Label>
             <Select value={location} onValueChange={(v) => setLocation(v ?? '')} disabled={!isIdle}>
               <SelectTrigger id="location" className="w-full">
-                <SelectValue placeholder="—" />
+                <SelectValue placeholder="—">
+                  {(value) =>
+                    value && LOCATION_LABELS[value as string]
+                      ? t(LOCATION_LABELS[value as string])
+                      : '—'
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="remote">{t('emp_location_remote')}</SelectItem>
@@ -140,7 +173,13 @@ export function ActivityForm() {
             <Label htmlFor="entry-type">{t('emp_entry_type')}</Label>
             <Select value={entryType} onValueChange={(v) => setEntryType(v ?? '')} disabled={!isIdle}>
               <SelectTrigger id="entry-type" className="w-full">
-                <SelectValue placeholder="—" />
+                <SelectValue placeholder="—">
+                  {(value) =>
+                    value && ENTRY_TYPE_LABELS[value as string]
+                      ? t(ENTRY_TYPE_LABELS[value as string])
+                      : '—'
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="productive">{t('emp_type_productive')}</SelectItem>
@@ -171,6 +210,7 @@ export function ActivityForm() {
               id="break-start"
               value={breakStartField}
               onChange={setBreakStartField}
+              disabled={!isIdle}
             />
           </div>
           <div className="space-y-1.5">
@@ -180,6 +220,7 @@ export function ActivityForm() {
               value={breakEndField}
               onChange={setBreakEndField}
               min={breakStartField}
+              disabled={!isIdle}
             />
           </div>
           <div className="space-y-1.5">
@@ -188,6 +229,7 @@ export function ActivityForm() {
               id="retro-end"
               value={retroEnd}
               onChange={setRetroEnd}
+              disabled={!isIdle}
             />
           </div>
         </div>
@@ -216,6 +258,13 @@ export function ActivityForm() {
           />
           <p className="text-xs text-muted-foreground">{t('emp_obs_hint')}</p>
         </div>
+
+        {/* Validation feedback */}
+        {error && (
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {t(error)}
+          </p>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-3">
@@ -253,6 +302,15 @@ export function ActivityForm() {
             className="disabled:pointer-events-auto disabled:cursor-not-allowed"
           >
             {t('emp_btn_end')}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isIdle}
+            onClick={saveManualEntry}
+            className="border-primary text-primary hover:bg-primary/10 hover:text-primary disabled:pointer-events-auto disabled:cursor-not-allowed"
+          >
+            {t('emp_btn_manual_save')}
           </Button>
         </div>
       </form>

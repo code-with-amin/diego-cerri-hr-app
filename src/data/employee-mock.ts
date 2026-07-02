@@ -1,6 +1,7 @@
 import type { TranslationKey } from '@/lib/i18n'
 
 export const MOCK_EMPLOYEE = {
+  id: 'emp-001',
   name: 'Carlos Mendes',
   email: 'colaborador@kpiengenharia.com',
   role: 'BIM Specialist',
@@ -40,6 +41,13 @@ export type HistoryEntry = {
   netHours: string
   rate: string
   cost: string
+  // Optional metadata captured on save (retroactive/manual corrections)
+  notes?: string
+  type?: string
+  location?: string
+  // Session ownership — the logged-in employee that registered the entry
+  employeeId?: string
+  employeeEmail?: string
 }
 
 export const MOCK_HISTORY: HistoryEntry[] = [

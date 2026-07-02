@@ -21,8 +21,14 @@ export default async function RootLayout({
   const stored = cookieStore.get("hr_lang")?.value;
   const initialLang: Language = stored === "en" ? "en" : "pt";
 
+  // Apply the persisted theme before first paint to avoid a light-mode flash on refresh.
+  const themeScript = `(function(){try{var s=localStorage.getItem('theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
+
   return (
-    <html lang={initialLang}>
+    <html lang={initialLang} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={inter.className}>
         <LanguageProvider initialLang={initialLang}>
           {children}
