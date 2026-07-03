@@ -48,21 +48,13 @@ const ENTRY_TYPE_LABELS: Record<string, TranslationKey> = {
   nonbillable: 'emp_type_nonbillable',
 }
 
-// Keep the hourly rate numeric: digits only, with at most one decimal
-// separator (accepts both "," and "." and normalizes to ",").
-function sanitizeRate(raw: string): string {
-  const cleaned = raw.replace(/[^\d.,]/g, '').replace(/[.]/g, ',')
-  const [whole, ...rest] = cleaned.split(',')
-  return rest.length ? `${whole},${rest.join('')}` : whole
-}
-
 export function ActivityForm() {
   const { t } = useLanguage()
   const {
     project, setProject,
     client, setClient,
     activityKey, setActivityKey,
-    rate, setRate,
+    rate,
     location, setLocation,
     entryType, setEntryType,
     retroStart, setRetroStart,
@@ -149,15 +141,14 @@ export function ActivityForm() {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
                 R$
               </span>
+              {/* Read-only: the rate is set by HR on the employee's account. */}
               <Input
                 id="rate"
-                className="pl-8"
-                placeholder={t('emp_rate_ph')}
+                className="pl-8 border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
+                placeholder="—"
                 value={rate}
-                onChange={(e) => setRate(sanitizeRate(e.target.value))}
-                disabled={!isIdle}
-                inputMode="decimal"
-                pattern="[0-9]*[.,]?[0-9]*"
+                readOnly
+                tabIndex={-1}
                 autoComplete="off"
               />
             </div>
@@ -293,10 +284,10 @@ export function ActivityForm() {
           <p className="text-xs text-muted-foreground">{t('emp_obs_hint')}</p>
         </div>
 
-        {/* Validation feedback */}
+        {/* Validation / server feedback */}
         {error && (
           <p role="alert" className="text-sm font-medium text-destructive">
-            {t(error)}
+            {error}
           </p>
         )}
 

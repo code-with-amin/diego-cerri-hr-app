@@ -7,6 +7,7 @@ import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
 import { TranslationKey } from '@/lib/i18n'
 import { HistoryEntry, ACTIVITY_KEYS as ACTIVITIES } from '@/data/employee-mock'
+import type { UpdateEntryInput } from '@/app/employee/tracker/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,10 +35,6 @@ function parseNumber(value: string): number {
   return parseFloat(cleaned) || 0
 }
 
-function formatBRL(n: number): string {
-  return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
 function sanitizeNumeric(raw: string): string {
   const cleaned = raw.replace(/[^\d.,]/g, '').replace(/\./g, ',')
   const [whole, ...rest] = cleaned.split(',')
@@ -45,7 +42,33 @@ function sanitizeNumeric(raw: string): string {
 }
 
 type EditableEntry = HistoryEntry & { date?: string }
-type EntryPatch = Partial<EditableEntry>
+
+// Build the backend PATCH payload from the dialog's fields. `startedAt`/`endedAt`
+// are reconstructed from the entry's date + the HH:MM times; `breakMs` is
+// derived so that (end - start - break) equals the edited net hours.
+function buildPayload(
+  entry: EditableEntry,
+  date: string,
+  project: string,
+  activityKey: string,
+  start: string,
+  end: string,
+  netHoursStr: string,
+): UpdateEntryInput {
+  const day = date || entry.date || new Date().toISOString().slice(0, 10)
+  const startedAt = new Date(`${day}T${start || '00:00'}`)
+  const endedAt = new Date(`${day}T${end || '00:00'}`)
+  const netMs = parseNumber(netHoursStr) * 3_600_000
+  const spanMs = endedAt.getTime() - startedAt.getTime()
+  const breakMs = Math.max(0, Math.round(spanMs - netMs))
+  return {
+    project: project.trim() || '—',
+    activityKey,
+    startedAt: Number.isNaN(startedAt.getTime()) ? undefined : startedAt.toISOString(),
+    endedAt: Number.isNaN(endedAt.getTime()) ? undefined : endedAt.toISOString(),
+    breakMs,
+  }
+}
 
 export function EditEntryDialog({
   entry,
@@ -53,8 +76,8 @@ export function EditEntryDialog({
   withDate = false,
 }: {
   entry: EditableEntry
-  /** Persist the edit. Defaults to the tracker context's in-memory updater. */
-  onSave?: (id: string, patch: EntryPatch) => void
+  /** Persist the edit. Defaults to the tracker context's backend updater. */
+  onSave?: (id: string, payload: UpdateEntryInput) => void | Promise<void>
   /** Show a date field (used on the "all entries" page). */
   withDate?: boolean
 }) {
@@ -62,6 +85,7 @@ export function EditEntryDialog({
   const { updateEntry } = useTracker()
   const save = onSave ?? updateEntry
   const [open, setOpen] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
 
   const [date, setDate] = React.useState(entry.date ?? '')
   const [project, setProject] = React.useState(entry.project)
@@ -83,21 +107,15 @@ export function EditEntryDialog({
     setRate(String(parseNumber(entry.rate)).replace('.', ','))
   }, [open, entry])
 
-  function handleSave() {
-    const netNum = parseNumber(netHours)
-    const rateNum = parseNumber(rate)
-    const patch: EntryPatch = {
-      project: project.trim() || '—',
-      activityKey,
-      start: start.trim(),
-      end: end.trim(),
-      netHours: `${netNum.toFixed(2)} h`,
-      rate: formatBRL(rateNum),
-      cost: formatBRL(netNum * rateNum),
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const payload = buildPayload(entry, withDate ? date : entry.date ?? '', project, activityKey, start, end, netHours)
+      await save(entry.id, payload)
+      setOpen(false)
+    } finally {
+      setSaving(false)
     }
-    if (withDate) patch.date = date
-    save(entry.id, patch)
-    setOpen(false)
   }
 
   return (
@@ -208,13 +226,14 @@ export function EditEntryDialog({
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
                   R$
                 </span>
+                {/* Read-only: rate is a snapshot set by HR and never rewritten. */}
                 <Input
                   id="edit-rate"
-                  className="pl-8"
+                  className="pl-8 border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
                   value={rate}
                   placeholder="0,00"
-                  inputMode="decimal"
-                  onChange={(e) => setRate(sanitizeNumeric(e.target.value))}
+                  readOnly
+                  tabIndex={-1}
                 />
               </div>
             </div>
@@ -227,7 +246,7 @@ export function EditEntryDialog({
           >
             {t('emp_edit_cancel')}
           </DialogClose>
-          <Button type="button" onClick={handleSave}>
+          <Button type="button" onClick={handleSave} disabled={saving}>
             {t('emp_edit_save')}
           </Button>
         </DialogFooter>

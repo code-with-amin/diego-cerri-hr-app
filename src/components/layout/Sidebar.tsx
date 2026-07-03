@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, LogOut, Users } from 'lucide-react'
+import { LayoutDashboard, LogOut, Users, Clock } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { logoutAction } from '@/app/login/actions'
@@ -13,6 +13,7 @@ import { TranslationKey } from '@/lib/i18n'
 const navItems: { labelKey: TranslationKey; href: string; icon: typeof LayoutDashboard; exact: boolean }[] = [
   { labelKey: 'nav_dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
   { labelKey: 'nav_candidates', href: '/dashboard/candidates', icon: Users, exact: false },
+  { labelKey: 'nav_employees', href: '/dashboard/employees', icon: Clock, exact: false },
 ]
 
 interface SidebarProps {

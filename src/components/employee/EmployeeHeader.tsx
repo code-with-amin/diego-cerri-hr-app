@@ -2,6 +2,7 @@
 
 import { Menu } from 'lucide-react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
+import { useTracker } from '@/components/providers/TrackerContext'
 import { Language } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/employee/ThemeToggle'
@@ -15,6 +16,7 @@ interface EmployeeHeaderProps {
 
 export function EmployeeHeader({ showSignOut, onMenuClick }: EmployeeHeaderProps) {
   const { lang, setLang, t } = useLanguage()
+  const { userName, userEmail, hydrated } = useTracker()
 
   return (
     <header className="border-b bg-card px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
@@ -28,6 +30,14 @@ export function EmployeeHeader({ showSignOut, onMenuClick }: EmployeeHeaderProps
           >
             <Menu className="size-5" />
           </button>
+        )}
+        {hydrated && userName && (
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-sm font-medium">{userName}</p>
+            {userEmail && (
+              <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
+            )}
+          </div>
         )}
       </div>
       <div className="flex items-center gap-2 sm:gap-3">

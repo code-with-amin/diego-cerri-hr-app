@@ -18,6 +18,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import { useLanguage } from '@/components/providers/LanguageProvider'
+import { summaryAction } from '@/app/employee/tracker/actions'
 
 const PERIOD_KEYS = [
   { key: 'chart_period_7' as const, value: '7' },
@@ -25,28 +26,29 @@ const PERIOD_KEYS = [
   { key: 'chart_period_30' as const, value: '30' },
 ]
 
-// Representative sample data — swap for real tracked hours once wired up.
-const WEEK = [
-  { label: 'Mon', hours: 7.5 },
-  { label: 'Tue', hours: 6 },
-  { label: 'Wed', hours: 8 },
-  { label: 'Thu', hours: 4.5 },
-  { label: 'Fri', hours: 6.5 },
-  { label: 'Sat', hours: 2 },
-  { label: 'Sun', hours: 0 },
-]
+type PerDay = { date: string; hours: number }
 
-function buildData(days: number) {
-  return Array.from({ length: days }, (_, i) => {
-    const base = WEEK[i % WEEK.length]
-    return { label: days > 7 ? `D${i + 1}` : base.label, hours: base.hours }
-  })
+// "2026-07-04" → "04/07"
+function dayLabel(date: string): string {
+  const [, m, d] = date.split('-')
+  return d && m ? `${d}/${m}` : date
 }
 
-export function HoursChart() {
+function toChartData(perDay: PerDay[]) {
+  return perDay.map((p) => ({ label: dayLabel(p.date), hours: p.hours }))
+}
+
+export function HoursChart({ perDay }: { perDay: PerDay[] }) {
   const [period, setPeriod] = useState('7')
+  const [data, setData] = useState(() => toChartData(perDay))
   const { t } = useLanguage()
-  const data = buildData(Number(period))
+
+  async function onPeriodChange(value: string | null) {
+    if (!value) return
+    setPeriod(value)
+    const res = await summaryAction(Number(value))
+    if (res.ok) setData(toChartData(res.summary.perDay))
+  }
 
   return (
     <Card className="h-full">
@@ -55,7 +57,7 @@ export function HoursChart() {
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             {t('emp_chart_hours')}
           </CardTitle>
-          <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
+          <Select value={period} onValueChange={onPeriodChange}>
             <SelectTrigger size="sm" className="w-36">
               <span className="text-sm">
                 {t(PERIOD_KEYS.find((p) => p.value === period)!.key)}
