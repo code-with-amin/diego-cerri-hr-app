@@ -23,8 +23,8 @@ const COLUMNS: TranslationKey[] = [
   'emp_col_net_hours',
   'emp_col_rate',
   'emp_col_cost',
-  'emp_col_actions',
   'emp_col_notes',
+  'emp_col_actions',
 ]
 
 export function HistoryTable() {
@@ -80,8 +80,8 @@ export function HistoryTable() {
                       <TableCell className="tabular-nums">{entry.netHours}</TableCell>
                       <TableCell className="tabular-nums">{entry.rate}</TableCell>
                       <TableCell className="tabular-nums">{entry.cost}</TableCell>
-                      <TableCell className="text-right"><EditEntryDialog entry={entry} /></TableCell>
                       <TableCell className="max-w-[16rem] truncate text-muted-foreground" title={entry.notes || undefined}>{entry.notes || '—'}</TableCell>
+                      <TableCell className="text-right"><EditEntryDialog entry={entry} /></TableCell>
                     </TableRow>
                   ))
                 )}
