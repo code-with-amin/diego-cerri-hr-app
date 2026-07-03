@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { DateTimePicker } from '@/components/employee/DateTimePicker'
-import { ACTIVITY_KEYS as ACTIVITIES } from '@/data/employee-mock'
 import {
   Select,
   SelectContent,
@@ -19,6 +18,12 @@ import {
 } from '@/components/ui/select'
 
 const ACTIVITIES: TranslationKey[] = [
+  'emp_activity_calculation',
+  'emp_activity_flowchart',
+  'emp_activity_view',
+  'emp_activity_detailing',
+  'emp_activity_bom',
+  'emp_activity_scanning',
   'emp_activity_bim',
   'emp_activity_compat',
   'emp_activity_docs',
