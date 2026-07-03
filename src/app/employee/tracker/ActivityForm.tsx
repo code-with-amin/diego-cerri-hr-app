@@ -18,14 +18,12 @@ import {
 } from '@/components/ui/select'
 
 const ACTIVITIES: TranslationKey[] = [
-  'emp_activity_bim',
-  'emp_activity_compat',
-  'emp_activity_docs',
-  'emp_activity_meeting',
-  'emp_activity_software',
-  'emp_activity_review',
-  'emp_activity_planning',
-  'emp_activity_support',
+  'emp_activity_calculation',
+  'emp_activity_flowchart',
+  'emp_activity_view',
+  'emp_activity_detailing',
+  'emp_activity_bom',
+  'emp_activity_scanning',
 ]
 
 export function ActivityForm() {
@@ -98,7 +96,11 @@ export function ActivityForm() {
               disabled={!isIdle}
             >
               <SelectTrigger id="activity" className="w-full">
-                <SelectValue placeholder={t('emp_activity_placeholder')} />
+                <SelectValue placeholder={t('emp_activity_placeholder')}>
+                  {(value) =>
+                    value ? t(value as TranslationKey) : t('emp_activity_placeholder')
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {ACTIVITIES.map((key) => (

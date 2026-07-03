@@ -7,10 +7,10 @@ import { TranslationKey } from '@/lib/i18n'
 
 // Representative sample data — hours by activity type.
 const BREAKDOWN: { labelKey: TranslationKey; value: number; colour: string }[] = [
-  { labelKey: 'emp_activity_bim', value: 12, colour: '#3b82f6' },
-  { labelKey: 'emp_activity_compat', value: 8, colour: '#f59e0b' },
-  { labelKey: 'emp_activity_meeting', value: 6, colour: '#22c55e' },
-  { labelKey: 'emp_activity_docs', value: 6, colour: '#a855f7' },
+  { labelKey: 'emp_activity_calculation', value: 12, colour: '#3b82f6' },
+  { labelKey: 'emp_activity_flowchart', value: 8, colour: '#f59e0b' },
+  { labelKey: 'emp_activity_view', value: 6, colour: '#22c55e' },
+  { labelKey: 'emp_activity_detailing', value: 6, colour: '#a855f7' },
 ]
 
 export function ActivityBreakdownChart() {

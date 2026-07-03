@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EditEntryDialog } from '@/components/employee/EditEntryDialog'
 
 const COLUMNS: TranslationKey[] = [
   'emp_col_project',
@@ -22,6 +23,7 @@ const COLUMNS: TranslationKey[] = [
   'emp_col_net_hours',
   'emp_col_rate',
   'emp_col_cost',
+  'emp_col_actions',
 ]
 
 export function HistoryTable() {
@@ -48,7 +50,12 @@ export function HistoryTable() {
               <TableHeader>
                 <TableRow>
                   {COLUMNS.map((col) => (
-                    <TableHead key={col}>{t(col)}</TableHead>
+                    <TableHead
+                      key={col}
+                      className={col === 'emp_col_actions' ? 'text-right' : undefined}
+                    >
+                      {t(col)}
+                    </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
@@ -72,6 +79,9 @@ export function HistoryTable() {
                       <TableCell className="tabular-nums">{entry.netHours}</TableCell>
                       <TableCell className="tabular-nums">{entry.rate}</TableCell>
                       <TableCell className="tabular-nums">{entry.cost}</TableCell>
+                      <TableCell className="text-right">
+                        <EditEntryDialog entry={entry} />
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

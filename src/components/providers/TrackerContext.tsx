@@ -48,6 +48,7 @@ interface TrackerContextValue {
   // History
   entries: HistoryEntry[]
   clearHistory: () => void
+  updateEntry: (id: string, patch: Partial<HistoryEntry>) => void
 }
 
 const TrackerContext = createContext<TrackerContextValue | null>(null)
@@ -159,7 +160,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     const newEntry: HistoryEntry = {
       id: String(Date.now()),
       project: project || '—',
-      activityKey: activityKey || 'emp_activity_bim',
+      activityKey: activityKey || 'emp_activity_calculation',
       start: registeredStart || nowHHMM(),
       end: nowHHMM(),
       netHours: toNetHoursStr(netMs),
@@ -196,6 +197,13 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     setEntries([])
   }
 
+  // Merge edited fields into an existing history entry (in-memory).
+  function updateEntry(id: string, patch: Partial<HistoryEntry>) {
+    setEntries((prev) =>
+      prev.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)),
+    )
+  }
+
   return (
     <TrackerContext.Provider
       value={{
@@ -221,6 +229,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
         endSession,
         entries,
         clearHistory,
+        updateEntry,
       }}
     >
       {children}

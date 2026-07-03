@@ -25,7 +25,7 @@ export const MOCK_HISTORY: HistoryEntry[] = [
   {
     id: '1',
     project: 'Linha 3 — Expansão',
-    activityKey: 'emp_activity_bim',
+    activityKey: 'emp_activity_calculation',
     start: '08:30',
     end: '12:00',
     netHours: '3.50 h',
@@ -35,7 +35,7 @@ export const MOCK_HISTORY: HistoryEntry[] = [
   {
     id: '2',
     project: 'KPI Engenharia',
-    activityKey: 'emp_activity_meeting',
+    activityKey: 'emp_activity_flowchart',
     start: '13:00',
     end: '14:00',
     netHours: '1.00 h',
@@ -45,7 +45,7 @@ export const MOCK_HISTORY: HistoryEntry[] = [
   {
     id: '3',
     project: 'Retrofit Galpão B',
-    activityKey: 'emp_activity_compat',
+    activityKey: 'emp_activity_view',
     start: '14:15',
     end: '16:45',
     netHours: '2.50 h',
@@ -55,7 +55,7 @@ export const MOCK_HISTORY: HistoryEntry[] = [
   {
     id: '4',
     project: 'Documentação OS-204',
-    activityKey: 'emp_activity_docs',
+    activityKey: 'emp_activity_detailing',
     start: '17:00',
     end: '18:00',
     netHours: '1.00 h',
@@ -65,7 +65,7 @@ export const MOCK_HISTORY: HistoryEntry[] = [
   {
     id: '5',
     project: 'Metrô SP — Linha 6',
-    activityKey: 'emp_activity_review',
+    activityKey: 'emp_activity_bom',
     start: '08:00',
     end: '10:30',
     netHours: '2.50 h',
@@ -75,7 +75,7 @@ export const MOCK_HISTORY: HistoryEntry[] = [
   {
     id: '6',
     project: 'Linha 3 — Expansão',
-    activityKey: 'emp_activity_planning',
+    activityKey: 'emp_activity_scanning',
     start: '11:00',
     end: '12:30',
     netHours: '1.50 h',
@@ -99,14 +99,12 @@ const ENTRY_PROJECTS = [
 ]
 
 const ENTRY_ACTIVITIES = [
-  'emp_activity_bim',
-  'emp_activity_compat',
-  'emp_activity_docs',
-  'emp_activity_meeting',
-  'emp_activity_software',
-  'emp_activity_review',
-  'emp_activity_planning',
-  'emp_activity_support',
+  'emp_activity_calculation',
+  'emp_activity_flowchart',
+  'emp_activity_view',
+  'emp_activity_detailing',
+  'emp_activity_bom',
+  'emp_activity_scanning',
 ]
 
 const ENTRY_SLOTS = [

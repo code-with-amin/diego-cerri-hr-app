@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
-import { MOCK_ENTRIES } from '@/data/employee-mock'
+import { MOCK_ENTRIES, type HistoryEntry } from '@/data/employee-mock'
+import { EditEntryDialog } from '@/components/employee/EditEntryDialog'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ const COLUMNS: TranslationKey[] = [
   'emp_col_net_hours',
   'emp_col_rate',
   'emp_col_cost',
+  'emp_col_actions',
 ]
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
@@ -42,16 +44,22 @@ export function EntriesTable() {
   const [query, setQuery] = useState('')
   const [pageSize, setPageSize] = useState(10)
   const [page, setPage] = useState(1)
+  // Local, editable copy of the entries (in-memory for the session).
+  const [items, setItems] = useState(MOCK_ENTRIES)
+
+  function handleSave(id: string, patch: Partial<HistoryEntry & { date?: string }>) {
+    setItems((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)))
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return MOCK_ENTRIES
-    return MOCK_ENTRIES.filter(
+    if (!q) return items
+    return items.filter(
       (e) =>
         e.project.toLowerCase().includes(q) ||
         t(e.activityKey as TranslationKey).toLowerCase().includes(q),
     )
-  }, [query, t])
+  }, [query, t, items])
 
   const total = filtered.length
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -98,7 +106,12 @@ export function EntriesTable() {
               <TableHeader>
                 <TableRow>
                   {COLUMNS.map((col) => (
-                    <TableHead key={col}>{t(col)}</TableHead>
+                    <TableHead
+                      key={col}
+                      className={col === 'emp_col_actions' ? 'text-right' : undefined}
+                    >
+                      {t(col)}
+                    </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
@@ -125,6 +138,9 @@ export function EntriesTable() {
                       <TableCell className="tabular-nums">{entry.netHours}</TableCell>
                       <TableCell className="tabular-nums">{entry.rate}</TableCell>
                       <TableCell className="tabular-nums">{entry.cost}</TableCell>
+                      <TableCell className="text-right">
+                        <EditEntryDialog entry={entry} onSave={handleSave} withDate />
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
