@@ -6,7 +6,7 @@ import { Pencil } from 'lucide-react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
 import { TranslationKey } from '@/lib/i18n'
-import { HistoryEntry } from '@/data/employee-mock'
+import { HistoryEntry, ACTIVITY_KEYS as ACTIVITIES } from '@/data/employee-mock'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,15 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-
-const ACTIVITIES: TranslationKey[] = [
-  'emp_activity_calculation',
-  'emp_activity_flowchart',
-  'emp_activity_view',
-  'emp_activity_detailing',
-  'emp_activity_bom',
-  'emp_activity_scanning',
-]
 
 // "R$ 120,00" -> 120, "3.50 h" -> 3.5
 function parseNumber(value: string): number {

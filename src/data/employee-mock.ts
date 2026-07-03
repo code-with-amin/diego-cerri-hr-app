@@ -1,8 +1,29 @@
+import type { TranslationKey } from '@/lib/i18n'
+
 export const MOCK_EMPLOYEE = {
   name: 'Carlos Mendes',
   email: 'colaborador@kpiengenharia.com',
   role: 'BIM Specialist',
 }
+
+// Activity options for the tracker/edit dropdowns — the current set plus the
+// earlier list, kept together so both forms stay in sync.
+export const ACTIVITY_KEYS: TranslationKey[] = [
+  'emp_activity_calculation',
+  'emp_activity_flowchart',
+  'emp_activity_view',
+  'emp_activity_detailing',
+  'emp_activity_bom',
+  'emp_activity_scanning',
+  'emp_activity_bim',
+  'emp_activity_compat',
+  'emp_activity_docs',
+  'emp_activity_meeting',
+  'emp_activity_software',
+  'emp_activity_review',
+  'emp_activity_planning',
+  'emp_activity_support',
+]
 
 // Mock credentials for demo login
 export const MOCK_EMPLOYEE_CREDENTIALS = {
