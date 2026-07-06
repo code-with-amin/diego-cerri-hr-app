@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { loginAction } from './actions'
 import { SubmitButton } from './SubmitButton'
@@ -65,10 +66,9 @@ export function LoginCard({ hasError, variant = 'admin' }: { hasError: boolean; 
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">{t('login_password')}</Label>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 placeholder="••••••••"
                 autoComplete="current-password"
                 required

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { KeyRound, Check } from 'lucide-react'
+import { KeyRound, Check, MailCheck, MailWarning } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import {
@@ -219,6 +220,7 @@ function ChangePasswordDialog({
   const [open, setOpen] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [result, setResult] = useState<{ emailed: boolean; email: string } | null>(null)
   const [isPending, startTransition] = useTransition()
 
   function submit() {
@@ -233,8 +235,9 @@ function ChangePasswordDialog({
         setError(t('emps_pwd_error'))
         return
       }
+      // Keep the dialog open and confirm whether the new-password email went out.
       setPassword('')
-      setOpen(false)
+      setResult({ emailed: res.emailed ?? false, email: res.email ?? '' })
     })
   }
 
@@ -246,6 +249,7 @@ function ChangePasswordDialog({
         if (!o) {
           setPassword('')
           setError(null)
+          setResult(null)
         }
       }}
     >
@@ -269,30 +273,51 @@ function ChangePasswordDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`pwd-${employeeId}`}>{t('emps_pwd_new')}</Label>
-          <Input
-            id={`pwd-${employeeId}`}
-            type="password"
-            value={password}
-            minLength={8}
-            disabled={isPending}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') submit()
-            }}
-          />
-          {error && <p className="text-xs text-red-600">{error}</p>}
-        </div>
+        {result ? (
+          <div className="flex items-start gap-2 text-sm">
+            {result.emailed ? (
+              <MailCheck className="mt-0.5 size-5 shrink-0 text-green-600" />
+            ) : (
+              <MailWarning className="mt-0.5 size-5 shrink-0 text-amber-600" />
+            )}
+            <p>
+              {t(result.emailed ? 'emps_pwd_emailed' : 'emps_pwd_not_emailed')}{' '}
+              <span className="font-medium">{result.email}</span>.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <Label htmlFor={`pwd-${employeeId}`}>{t('emps_pwd_new')}</Label>
+            <PasswordInput
+              id={`pwd-${employeeId}`}
+              value={password}
+              minLength={8}
+              disabled={isPending}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') submit()
+              }}
+            />
+            {error && <p className="text-xs text-red-600">{error}</p>}
+          </div>
+        )}
 
         <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            {t('emps_pwd_cancel')}
-          </DialogClose>
-          <Button type="button" onClick={submit} disabled={isPending}>
-            {isPending && <Spinner className="mr-1.5 size-3.5" />}
-            {t('emps_pwd_submit')}
-          </Button>
+          {result ? (
+            <DialogClose render={<Button type="button" />}>
+              {t('approval_dialog_ok')}
+            </DialogClose>
+          ) : (
+            <>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {t('emps_pwd_cancel')}
+              </DialogClose>
+              <Button type="button" onClick={submit} disabled={isPending}>
+                {isPending && <Spinner className="mr-1.5 size-3.5" />}
+                {t('emps_pwd_submit')}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

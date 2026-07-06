@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { resetPasswordAction } from './actions'
@@ -40,10 +40,9 @@ function ResetForm() {
       <input type="hidden" name="token" value={token} />
       <div className="space-y-1.5">
         <Label htmlFor="password">{t('emp_reset_password')}</Label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="new-password"
           minLength={8}
           required
@@ -51,10 +50,9 @@ function ResetForm() {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="confirm">{t('emp_reset_confirm')}</Label>
-        <Input
+        <PasswordInput
           id="confirm"
           name="confirm"
-          type="password"
           autoComplete="new-password"
           minLength={8}
           required

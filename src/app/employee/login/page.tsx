@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { employeeLoginAction } from './actions'
@@ -32,10 +33,9 @@ function LoginForm() {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="password">{t('login_password')}</Label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           placeholder="••••••••"
           autoComplete="current-password"
           required

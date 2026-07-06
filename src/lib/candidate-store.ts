@@ -194,11 +194,25 @@ export async function getNotes(candidateId: string): Promise<Note[]> {
   }
 }
 
-export async function updateCandidateStatus(id: string, status: CandidateStatus): Promise<void> {
-  await apiFetch(`/candidates/${id}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: STATUS_TO_BACKEND[status] }),
-  })
+/** Populated only on a first-time approval that just provisioned an account. */
+export interface ApprovalNotification {
+  type: 'approval'
+  email: string
+  emailed: boolean
+}
+
+export async function updateCandidateStatus(
+  id: string,
+  status: CandidateStatus,
+): Promise<ApprovalNotification | null> {
+  const res = await apiFetch<{ notification: ApprovalNotification | null }>(
+    `/candidates/${id}/status`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ status: STATUS_TO_BACKEND[status] }),
+    },
+  )
+  return res.notification
 }
 
 export async function deleteCandidate(id: string): Promise<void> {

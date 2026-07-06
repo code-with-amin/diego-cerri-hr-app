@@ -15,8 +15,13 @@ import {
 import type { BackendSession } from '@/lib/employee-store'
 
 export type TimerStatus = 'idle' | 'running' | 'paused'
+export type TrackerMode = 'live' | 'manual'
 
 interface TrackerContextValue {
+  // Which module the form is in: live timer vs manual (retroactive) entry.
+  mode: TrackerMode
+  setMode: (m: TrackerMode) => void
+
   // Form fields
   project: string
   setProject: (v: string) => void
@@ -107,6 +112,10 @@ function toRateStr(rateStr: string): string {
 }
 
 export function TrackerProvider({ children }: { children: React.ReactNode }) {
+  // Module selector: 'live' captures times at click-time, 'manual' takes them
+  // from the datetime pickers.
+  const [mode, setMode] = useState<TrackerMode>('live')
+
   // Form fields
   const [project, setProject] = useState('')
   const [client, setClient] = useState('')
@@ -224,8 +233,25 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     setRate(userRate)
   }
 
+  // Shared required-field check for both modules. Every field is required
+  // except the observations/notes (and, in manual mode, the optional break).
+  // Returns an error message, or null when all required fields are present.
+  function validateRequiredFields(): string | null {
+    if (!project.trim()) return 'Informe o projeto.'
+    if (!client.trim()) return 'Informe o cliente.'
+    if (!activityKey) return 'Selecione a atividade.'
+    if (!location) return 'Selecione o local de trabalho.'
+    if (!entryType) return 'Selecione o tipo de lançamento.'
+    return null
+  }
+
   async function startSession() {
     if (pending.current) return
+    const missing = validateRequiredFields()
+    if (missing) {
+      setError(missing)
+      return
+    }
     pending.current = true
     setError(null)
     try {
@@ -236,7 +262,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
         location: location || undefined,
         entryType: entryType || undefined,
         observations: observations || undefined,
-        startedAt: localToISO(retroStart),
+        // Live mode is strictly runtime: the server stamps the start at now.
       })
       if (!res.ok) {
         setError(res.error)
@@ -300,7 +326,8 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     pending.current = true
     setError(null)
     try {
-      const res = await stopAction(localToISO(retroEnd))
+      // Live mode is strictly runtime: the server stamps the end at now.
+      const res = await stopAction()
       if (!res.ok) {
         setError(res.error)
         return
@@ -315,6 +342,13 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
 
   async function saveManualEntry() {
     if (pending.current) return
+
+    const missing = validateRequiredFields()
+    if (missing) {
+      setError(missing)
+      return
+    }
+
     const startMs = parseLocalMs(retroStart)
     const endMs = parseLocalMs(retroEnd)
 
@@ -394,6 +428,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
   return (
     <TrackerContext.Provider
       value={{
+        mode, setMode,
         project, setProject,
         client, setClient,
         activityKey, setActivityKey,

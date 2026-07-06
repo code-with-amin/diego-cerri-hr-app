@@ -24,17 +24,20 @@ export async function updateEmployeeAction(
 export async function setEmployeePasswordAction(
   id: string,
   password: string,
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; emailed?: boolean; email?: string }> {
   try {
-    await apiFetch<{ ok: true; id: string }>(`/employees/${id}/password`, {
-      method: 'POST',
-      body: JSON.stringify({ password }),
-    })
+    const res = await apiFetch<{ ok: true; id: string; emailed: boolean; email: string }>(
+      `/employees/${id}/password`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      },
+    )
+    return { emailed: res.emailed, email: res.email }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to set password'
     return { error: message }
   }
-  return {}
 }
 
 export interface TimesheetFilters {
