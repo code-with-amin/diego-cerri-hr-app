@@ -16,12 +16,20 @@ export function middleware(request: NextRequest) {
 
   // Employee routes
   if (
-    (pathname.startsWith('/employee/dashboard') || pathname.startsWith('/employee/tracker')) &&
+    (pathname.startsWith('/employee/dashboard') ||
+      pathname.startsWith('/employee/tracker') ||
+      pathname.startsWith('/employee/entries')) &&
     !isEmpAuthenticated
   ) {
     return NextResponse.redirect(new URL('/employee/login', request.url))
   }
-  if (pathname === '/employee/login' && isEmpAuthenticated) {
+  // While authenticated, the auth pages redirect back into the portal.
+  if (
+    (pathname === '/employee/login' ||
+      pathname === '/employee/forgot-password' ||
+      pathname === '/employee/reset-password') &&
+    isEmpAuthenticated
+  ) {
     return NextResponse.redirect(new URL('/employee/dashboard', request.url))
   }
 
@@ -29,5 +37,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/employee/dashboard/:path*', '/employee/tracker/:path*', '/employee/login'],
+  matcher: [
+    '/dashboard/:path*',
+    '/login',
+    '/employee/dashboard/:path*',
+    '/employee/tracker/:path*',
+    '/employee/entries/:path*',
+    '/employee/login',
+    '/employee/forgot-password',
+    '/employee/reset-password',
+  ],
 }

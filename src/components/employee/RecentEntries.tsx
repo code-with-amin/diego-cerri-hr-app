@@ -14,7 +14,7 @@ import { Card } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
-import { MOCK_ENTRIES } from '@/data/employee-mock'
+import type { HistoryEntry } from '@/data/employee-mock'
 
 const COLUMNS: TranslationKey[] = [
   'emp_col_date',
@@ -26,9 +26,7 @@ const COLUMNS: TranslationKey[] = [
   'emp_col_cost',
 ]
 
-const RECENT_ENTRIES = MOCK_ENTRIES.slice(0, 5)
-
-export function RecentEntries() {
+export function RecentEntries({ entries }: { entries: HistoryEntry[] }) {
   const { t } = useLanguage()
 
   return (
@@ -59,7 +57,7 @@ export function RecentEntries() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {RECENT_ENTRIES.map((entry) => (
+                {entries.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="tabular-nums text-muted-foreground">
                       {entry.date}

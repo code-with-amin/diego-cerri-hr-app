@@ -45,12 +45,20 @@ interface DateTimePickerProps {
   placeholder?: string
   /** Lower bound (datetime-local string). The effective floor is max(now, min). */
   min?: string
+  /**
+   * Allow selecting moments in the past. Live mode leaves this off (a session
+   * can't start in the past); manual entry turns it on so retroactive
+   * start/break/end times can be keyed in. The `min` bound still applies, so
+   * ordering constraints (end ≥ start) hold even when the past is allowed.
+   */
+  allowPast?: boolean
 }
 
 /**
  * Date + time picker backed by the shadcn Calendar. Anything before the floor —
  * the later of "now" and the optional `min` bound — is muted and non-selectable,
- * so e.g. a break end can never sit before its break start.
+ * so e.g. a break end can never sit before its break start. When `allowPast` is
+ * set the "now" component of the floor is dropped, leaving only the `min` bound.
  */
 export function DateTimePicker({
   id,
@@ -59,6 +67,7 @@ export function DateTimePicker({
   disabled,
   placeholder,
   min,
+  allowPast,
 }: DateTimePickerProps) {
   const { lang, t } = useLanguage()
   const locale = lang === 'pt' ? ptBR : enUS
@@ -66,10 +75,10 @@ export function DateTimePicker({
   const parsed = value ? new Date(value) : undefined
   const selected = parsed && !Number.isNaN(parsed.getTime()) ? parsed : undefined
 
-  // Floor = later of "now" and the optional `min` bound.
+  // Floor = the `min` bound, and (unless the past is allowed) also "now".
   const minParsed = min ? new Date(min) : undefined
   const minMs = minParsed && !Number.isNaN(minParsed.getTime()) ? minParsed.getTime() : 0
-  const floor = new Date(Math.max(Date.now(), minMs))
+  const floor = new Date(allowPast ? minMs : Math.max(Date.now(), minMs))
 
   const timeValue = selected ? `${pad(selected.getHours())}:${pad(selected.getMinutes())}` : ''
   const minTime =
@@ -77,11 +86,16 @@ export function DateTimePicker({
       ? `${pad(floor.getHours())}:${pad(floor.getMinutes())}`
       : undefined
 
+  // Time-of-day to seed a fresh pick: the floor when it's a real bound,
+  // otherwise the current wall-clock time (avoids the 1970 epoch default when
+  // the past is allowed and there's no `min`).
+  const seedTime = floor.getTime() > 0 ? floor : new Date()
+
   function handleDateSelect(date: Date | undefined) {
     if (!date) return
-    // Keep the previously chosen time of day, defaulting to the floor for a fresh pick.
-    const hours = selected ? selected.getHours() : floor.getHours()
-    const minutes = selected ? selected.getMinutes() : floor.getMinutes()
+    // Keep the previously chosen time of day, defaulting to the seed for a fresh pick.
+    const hours = selected ? selected.getHours() : seedTime.getHours()
+    const minutes = selected ? selected.getMinutes() : seedTime.getMinutes()
     const combined = new Date(date)
     combined.setHours(hours, minutes, 0, 0)
     // Never allow a moment before the floor.
@@ -94,7 +108,7 @@ export function DateTimePicker({
   function handleTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!e.target.value) return
     const [h, m] = e.target.value.split(':').map(Number)
-    const base = selected ?? new Date(floor)
+    const base = selected ?? new Date(seedTime)
     const combined = new Date(base)
     combined.setHours(h || 0, m || 0, 0, 0)
     // Reject times before the floor (past, or before the min bound).

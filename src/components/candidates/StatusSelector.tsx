@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import type React from 'react'
-import { Sparkles, Clock, CheckCircle2, XCircle } from 'lucide-react'
+import { Sparkles, Clock, CheckCircle2, XCircle, MailCheck, MailWarning } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CandidateStatus } from '@/lib/types'
 import { updateStatusAction } from '@/app/actions/update-status'
+import type { ApprovalNotification } from '@/lib/candidate-store'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Spinner } from '@/components/ui/spinner'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -15,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 const STATUSES: CandidateStatus[] = ['New', 'Under Review', 'Approved', 'Rejected']
 
@@ -35,6 +45,7 @@ interface StatusSelectorProps {
 export function StatusSelector({ candidateId, currentStatus, compact = false }: StatusSelectorProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [notification, setNotification] = useState<ApprovalNotification | null>(null)
   const { t } = useLanguage()
 
   function handleChange(status: CandidateStatus) {
@@ -42,7 +53,12 @@ export function StatusSelector({ candidateId, currentStatus, compact = false }: 
     setError(null)
     startTransition(async () => {
       const result = await updateStatusAction(candidateId, status)
-      if (result.error) setError(result.error)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      // First-time approval that just provisioned an account → confirm the email.
+      if (result.notification) setNotification(result.notification)
     })
   }
 
@@ -90,6 +106,41 @@ export function StatusSelector({ candidateId, currentStatus, compact = false }: 
       {error && (
         <p className="mt-2 text-xs text-red-600">{error}</p>
       )}
+
+      {/* First-approval confirmation: whether the credentials email went out. */}
+      <Dialog open={notification !== null} onOpenChange={(o) => !o && setNotification(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {notification?.emailed ? (
+                <MailCheck className="size-5 text-green-600" />
+              ) : (
+                <MailWarning className="size-5 text-amber-600" />
+              )}
+              {t('approval_dialog_title')}
+            </DialogTitle>
+            <DialogDescription>
+              {notification?.emailed ? (
+                <>
+                  {t('approval_dialog_emailed')}{' '}
+                  <span className="font-medium text-foreground">{notification?.email}</span>.
+                </>
+              ) : (
+                <>
+                  {t('approval_dialog_not_emailed')}{' '}
+                  <span className="font-medium text-foreground">{notification?.email}</span>.{' '}
+                  {t('approval_dialog_not_emailed_hint')}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" onClick={() => setNotification(null)}>
+              {t('approval_dialog_ok')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

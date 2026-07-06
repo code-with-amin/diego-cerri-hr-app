@@ -48,21 +48,14 @@ const ENTRY_TYPE_LABELS: Record<string, TranslationKey> = {
   nonbillable: 'emp_type_nonbillable',
 }
 
-// Keep the hourly rate numeric: digits only, with at most one decimal
-// separator (accepts both "," and "." and normalizes to ",").
-function sanitizeRate(raw: string): string {
-  const cleaned = raw.replace(/[^\d.,]/g, '').replace(/[.]/g, ',')
-  const [whole, ...rest] = cleaned.split(',')
-  return rest.length ? `${whole},${rest.join('')}` : whole
-}
-
 export function ActivityForm() {
   const { t } = useLanguage()
   const {
+    mode, setMode,
     project, setProject,
     client, setClient,
     activityKey, setActivityKey,
-    rate, setRate,
+    rate,
     location, setLocation,
     entryType, setEntryType,
     retroStart, setRetroStart,
@@ -85,6 +78,11 @@ export function ActivityForm() {
   const isRunning = timerStatus === 'running'
   const isPaused = timerStatus === 'paused'
 
+  const isLive = mode === 'live'
+  const isManual = mode === 'manual'
+  // The mode can only be switched while no live session is in progress.
+  const canSwitchMode = isIdle
+
   return (
     <Card className="py-0">
       <form className="space-y-6 p-6" onSubmit={(e) => e.preventDefault()}>
@@ -92,6 +90,47 @@ export function ActivityForm() {
         <div>
           <h3 className="text-lg font-semibold leading-tight">{t('emp_form_title')}</h3>
           <p className="text-sm text-muted-foreground">{t('emp_form_desc')}</p>
+        </div>
+
+        {/* Module selector: live timer vs manual (retroactive) entry */}
+        <div className="space-y-1.5">
+          <div
+            role="tablist"
+            aria-label={t('emp_form_title')}
+            className="inline-flex rounded-lg border bg-muted/40 p-1"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isLive}
+              disabled={!canSwitchMode}
+              onClick={() => setMode('live')}
+              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${
+                isLive
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground disabled:hover:text-muted-foreground'
+              }`}
+            >
+              {t('emp_mode_live')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isManual}
+              disabled={!canSwitchMode}
+              onClick={() => setMode('manual')}
+              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${
+                isManual
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground disabled:hover:text-muted-foreground'
+              }`}
+            >
+              {t('emp_mode_manual')}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t(isLive ? 'emp_mode_hint_live' : 'emp_mode_hint_manual')}
+          </p>
         </div>
 
         {/* Project + Client */}
@@ -149,15 +188,14 @@ export function ActivityForm() {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
                 R$
               </span>
+              {/* Read-only: the rate is set by HR on the employee's account. */}
               <Input
                 id="rate"
-                className="pl-8"
-                placeholder={t('emp_rate_ph')}
+                className="pl-8 border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
+                placeholder="—"
                 value={rate}
-                onChange={(e) => setRate(sanitizeRate(e.target.value))}
-                disabled={!isIdle}
-                inputMode="decimal"
-                pattern="[0-9]*[.,]?[0-9]*"
+                readOnly
+                tabIndex={-1}
                 autoComplete="off"
               />
             </div>
@@ -206,79 +244,88 @@ export function ActivityForm() {
           </div>
         </div>
 
-        {/* Retroactive start */}
-        <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
-          <Label htmlFor="retro-start">{t('emp_retro_start')}</Label>
-          <DateTimePicker
-            id="retro-start"
-            value={retroStart}
-            onChange={setRetroStart}
-            disabled={!isIdle}
-          />
-          <p className="text-xs text-muted-foreground">{t('emp_retro_start_hint')}</p>
-        </div>
+        {/* Manual (retroactive) entry — hand-entered start / break / end */}
+        {isManual && (
+          <>
+            {/* Manual start */}
+            <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
+              <Label htmlFor="retro-start">{t('emp_retro_start')}</Label>
+              <DateTimePicker
+                id="retro-start"
+                value={retroStart}
+                onChange={setRetroStart}
+                allowPast
+              />
+              <p className="text-xs text-muted-foreground">{t('emp_retro_start_hint')}</p>
+            </div>
 
-        {/* Break start / Break end / Retroactive end */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="break-start">{t('emp_break_start')}</Label>
-            <DateTimePicker
-              id="break-start"
-              value={breakStartField}
-              onChange={setBreakStartField}
-              disabled={!isIdle}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="break-end">{t('emp_break_end')}</Label>
-            <DateTimePicker
-              id="break-end"
-              value={breakEndField}
-              onChange={setBreakEndField}
-              min={breakStartField}
-              disabled={!isIdle}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="retro-end">{t('emp_retro_end')}</Label>
-            <DateTimePicker
-              id="retro-end"
-              value={retroEnd}
-              onChange={setRetroEnd}
-              disabled={!isIdle}
-            />
-          </div>
-        </div>
+            {/* Break start / Break end / Manual end */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="break-start">{t('emp_break_start')}</Label>
+                <DateTimePicker
+                  id="break-start"
+                  value={breakStartField}
+                  onChange={setBreakStartField}
+                  min={retroStart}
+                  allowPast
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="break-end">{t('emp_break_end')}</Label>
+                <DateTimePicker
+                  id="break-end"
+                  value={breakEndField}
+                  onChange={setBreakEndField}
+                  min={breakStartField}
+                  allowPast
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="retro-end">{t('emp_retro_end')}</Label>
+                <DateTimePicker
+                  id="retro-end"
+                  value={retroEnd}
+                  onChange={setRetroEnd}
+                  min={retroStart}
+                  allowPast
+                />
+              </div>
+            </div>
+          </>
+        )}
 
-        {/* Registered start / end — auto-filled, read-only (visually distinct) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="registered-start" className="text-muted-foreground">
-              {t('emp_registered_start')}
-            </Label>
-            <Input
-              id="registered-start"
-              value={registeredStart}
-              placeholder=""
-              readOnly
-              tabIndex={-1}
-              className="border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
-            />
+        {/* Live mode: registered start / end — auto-filled, read-only */}
+        {isLive && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="registered-start" className="text-muted-foreground">
+                {t('emp_registered_start')}
+              </Label>
+              <Input
+                id="registered-start"
+                value={registeredStart}
+                placeholder=""
+                readOnly
+                tabIndex={-1}
+                className="border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="registered-end" className="text-muted-foreground">
+                {t('emp_registered_end')}
+              </Label>
+              <Input
+                id="registered-end"
+                value={registeredEnd}
+                placeholder=""
+                readOnly
+                tabIndex={-1}
+                className="border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="registered-end" className="text-muted-foreground">
-              {t('emp_registered_end')}
-            </Label>
-            <Input
-              id="registered-end"
-              value={registeredEnd}
-              placeholder=""
-              readOnly
-              tabIndex={-1}
-              className="border-dashed bg-muted/60 text-muted-foreground cursor-default focus-visible:ring-0"
-            />
-          </div>
-        </div>
+        )}
 
         {/* Observations */}
         <div className="space-y-1.5">
@@ -293,64 +340,69 @@ export function ActivityForm() {
           <p className="text-xs text-muted-foreground">{t('emp_obs_hint')}</p>
         </div>
 
-        {/* Validation feedback */}
+        {/* Validation / server feedback */}
         {error && (
           <p role="alert" className="text-sm font-medium text-destructive">
-            {t(error)}
+            {error}
           </p>
         )}
 
-        {/* Action buttons — single line on wide screens; wrap (never hide) when cramped */}
+        {/* Action buttons — the set depends on the active module */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            disabled={!isIdle}
-            onClick={startSession}
-            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
-          >
-            {t('emp_btn_start')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={!isRunning}
-            onClick={startBreak}
-            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
-          >
-            {t('emp_btn_break')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={!isPaused}
-            onClick={resumeSession}
-            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
-          >
-            {t('emp_btn_resume')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="destructive"
-            disabled={isIdle}
-            onClick={endSession}
-            className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
-          >
-            {t('emp_btn_end')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={!isIdle}
-            onClick={saveManualEntry}
-            className="shrink-0 whitespace-nowrap border-primary text-primary hover:bg-primary/10 hover:text-primary disabled:pointer-events-auto disabled:cursor-not-allowed"
-          >
-            {t('emp_btn_manual_save')}
-          </Button>
+          {isLive && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                disabled={!isIdle}
+                onClick={startSession}
+                className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
+              >
+                {t('emp_btn_start')}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={!isRunning}
+                onClick={startBreak}
+                className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
+              >
+                {t('emp_btn_break')}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={!isPaused}
+                onClick={resumeSession}
+                className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
+              >
+                {t('emp_btn_resume')}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                disabled={isIdle}
+                onClick={endSession}
+                className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
+              >
+                {t('emp_btn_end')}
+              </Button>
+            </>
+          )}
+          {isManual && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={saveManualEntry}
+              className="shrink-0 whitespace-nowrap border-primary text-primary hover:bg-primary/10 hover:text-primary disabled:pointer-events-auto disabled:cursor-not-allowed"
+            >
+              {t('emp_btn_manual_save')}
+            </Button>
+          )}
         </div>
       </form>
     </Card>

@@ -1,15 +1,16 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { updateCandidateStatus } from '@/lib/candidate-store'
+import { updateCandidateStatus, type ApprovalNotification } from '@/lib/candidate-store'
 import { CandidateStatus } from '@/lib/types'
 
 export async function updateStatusAction(
   id: string,
   status: CandidateStatus,
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; notification?: ApprovalNotification | null }> {
+  let notification: ApprovalNotification | null = null
   try {
-    await updateCandidateStatus(id, status)
+    notification = await updateCandidateStatus(id, status)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to update status'
     return { error: message }
@@ -17,5 +18,5 @@ export async function updateStatusAction(
   revalidatePath(`/dashboard/candidates/${id}`)
   revalidatePath('/dashboard/candidates')
   revalidatePath('/dashboard')
-  return {}
+  return { notification }
 }

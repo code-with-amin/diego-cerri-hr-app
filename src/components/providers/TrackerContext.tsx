@@ -1,12 +1,27 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { MOCK_EMPLOYEE, MOCK_HISTORY, type HistoryEntry } from '@/data/employee-mock'
-import type { TranslationKey } from '@/lib/i18n'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import type { HistoryEntry } from '@/data/employee-mock'
+import {
+  bootstrapTrackerAction,
+  breakAction,
+  resumeAction,
+  startSessionAction,
+  stopAction,
+  manualEntryAction,
+  updateEntryAction,
+  type UpdateEntryInput,
+} from '@/app/employee/tracker/actions'
+import type { BackendSession } from '@/lib/employee-store'
 
 export type TimerStatus = 'idle' | 'running' | 'paused'
+export type TrackerMode = 'live' | 'manual'
 
 interface TrackerContextValue {
+  // Which module the form is in: live timer vs manual (retroactive) entry.
+  mode: TrackerMode
+  setMode: (m: TrackerMode) => void
+
   // Form fields
   project: string
   setProject: (v: string) => void
@@ -40,11 +55,17 @@ interface TrackerContextValue {
   elapsedMs: number
   breakCount: number
 
-  // Validation feedback (translation key of the last error, or null)
-  error: TranslationKey | null
+  // Connected user (from /me)
+  userName: string
+  userEmail: string
+  userRole: string
+  hydrated: boolean
+
+  // Validation / server feedback (display-ready message, or null)
+  error: string | null
   clearError: () => void
 
-  // Actions
+  // Actions (persist to the backend)
   startSession: () => void
   startBreak: () => void
   resumeSession: () => void
@@ -54,20 +75,13 @@ interface TrackerContextValue {
   // History
   entries: HistoryEntry[]
   clearHistory: () => void
-  updateEntry: (id: string, patch: Partial<HistoryEntry>) => void
+  updateEntry: (id: string, payload: UpdateEntryInput) => Promise<void>
 }
 
 const TrackerContext = createContext<TrackerContextValue | null>(null)
 
-function formatHHMM(ms: number): string {
-  const totalSec = Math.floor(ms / 1000)
-  const h = Math.floor(totalSec / 3600)
-  const m = Math.floor((totalSec % 3600) / 60)
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-}
-
 function formatHHMMSS(ms: number): string {
-  const totalSec = Math.floor(ms / 1000)
+  const totalSec = Math.max(0, Math.floor(ms / 1000))
   const h = Math.floor(totalSec / 3600)
   const m = Math.floor((totalSec % 3600) / 60)
   const s = totalSec % 60
@@ -81,28 +95,27 @@ function parseLocalMs(value: string): number | null {
   return Number.isNaN(ms) ? null : ms
 }
 
+// datetime-local string → ISO (or undefined if empty/invalid).
+function localToISO(value: string): string | undefined {
+  const ms = parseLocalMs(value)
+  return ms === null ? undefined : new Date(ms).toISOString()
+}
+
 function hhmmFromMs(ms: number): string {
   const d = new Date(ms)
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-function toNetHoursStr(ms: number): string {
-  return `${(ms / 3_600_000).toFixed(2)} h`
-}
-
-function toCostStr(ms: number, rateStr: string): string {
-  const rateNum = parseFloat(rateStr.replace(',', '.')) || 0
-  const hours = ms / 3_600_000
-  const cost = hours * rateNum
-  return `R$ ${cost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
 function toRateStr(rateStr: string): string {
-  const rateNum = parseFloat(rateStr.replace(',', '.')) || 0
+  const rateNum = parseFloat(String(rateStr).replace(',', '.')) || 0
   return `R$ ${rateNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export function TrackerProvider({ children }: { children: React.ReactNode }) {
+  // Module selector: 'live' captures times at click-time, 'manual' takes them
+  // from the datetime pickers.
+  const [mode, setMode] = useState<TrackerMode>('live')
+
   // Form fields
   const [project, setProject] = useState('')
   const [client, setClient] = useState('')
@@ -126,13 +139,70 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
   const [breakCount, setBreakCount] = useState(0)
   const [elapsedMs, setElapsedMs] = useState(0)
 
-  // Validation feedback
-  const [error, setError] = useState<TranslationKey | null>(null)
+  // Connected user
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+  const [userRole, setUserRole] = useState('')
+  const [userRate, setUserRate] = useState('') // authoritative read-only rate
+  const [hydrated, setHydrated] = useState(false)
 
-  // History
-  const [entries, setEntries] = useState<HistoryEntry[]>(MOCK_HISTORY)
+  const [error, setError] = useState<string | null>(null)
+  const [entries, setEntries] = useState<HistoryEntry[]>([])
 
-  // Live elapsed time interval
+  // Guards a mutation in flight so double-clicks don't double-post.
+  const pending = useRef(false)
+
+  // Restore timer state from a persisted server session.
+  function hydrateFromSession(session: BackendSession, fallbackRate: string) {
+    const startMs = new Date(session.startedAt).getTime()
+    setSessionStartMs(startMs)
+    setTotalBreakMs(session.totalBreakMs)
+    setBreakCount(session.breakCount)
+    setProject(session.project)
+    setClient(session.client ?? '')
+    setActivityKey(session.activityKey)
+    setLocation(session.location ?? '')
+    setEntryType(session.entryType ?? '')
+    setObservations(session.observations ?? '')
+    setRate(session.rateSnapshot ?? fallbackRate)
+    setRegisteredStart(hhmmFromMs(startMs))
+    setRegisteredEnd('')
+    if (session.status === 'paused' && session.currentBreakStartedAt) {
+      const breakStart = new Date(session.currentBreakStartedAt).getTime()
+      setCurrentBreakStartMs(breakStart)
+      setElapsedMs(Math.max(0, breakStart - startMs - session.totalBreakMs))
+      setTimerStatus('paused')
+    } else {
+      setCurrentBreakStartMs(null)
+      setElapsedMs(Math.max(0, Date.now() - startMs - session.totalBreakMs))
+      setTimerStatus('running')
+    }
+  }
+
+  // Bootstrap on mount: connected user, active session, recent entries.
+  useEffect(() => {
+    let cancelled = false
+    bootstrapTrackerAction()
+      .then((data) => {
+        if (cancelled) return
+        setUserName(data.me.name ?? data.me.email)
+        setUserEmail(data.me.email)
+        setUserRole(data.me.role)
+        setUserRate(data.me.hourlyRate ?? '')
+        setRate(data.me.hourlyRate ?? '')
+        setEntries(data.entries)
+        if (data.session) hydrateFromSession(data.session, data.me.hourlyRate ?? '')
+        setHydrated(true)
+      })
+      .catch(() => {
+        if (!cancelled) setHydrated(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Live elapsed time interval (client-side UX tick).
   useEffect(() => {
     if (timerStatus !== 'running' || sessionStartMs === null) return
     const id = setInterval(() => {
@@ -141,66 +211,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id)
   }, [timerStatus, sessionStartMs, totalBreakMs])
 
-  function startSession() {
-    const now = Date.now()
-    const startMs = retroStart ? new Date(retroStart).getTime() : now
-    if (Number.isNaN(startMs) || startMs > now) {
-      setError('emp_err_start_invalid')
-      return
-    }
-    setError(null)
-    setSessionStartMs(startMs)
-    setTotalBreakMs(0)
-    setBreakCount(0)
-    setCurrentBreakStartMs(null)
-    setElapsedMs(now - startMs)
-    setRegisteredStart(hhmmFromMs(startMs))
-    setRegisteredEnd('')
-    setTimerStatus('running')
-  }
-
-  // Build a completed entry, stamping the logged-in employee, notes and metadata.
-  function makeEntry(startLabel: string, endLabel: string, netMs: number): HistoryEntry {
-    return {
-      id: String(Date.now()),
-      project: project || '—',
-      activityKey: activityKey || 'emp_activity_bim',
-      start: startLabel,
-      end: endLabel,
-      netHours: toNetHoursStr(netMs),
-      rate: toRateStr(rate),
-      cost: toCostStr(netMs, rate),
-      notes: observations || undefined,
-      type: entryType || undefined,
-      location: location || undefined,
-      employeeId: MOCK_EMPLOYEE.id,
-      employeeEmail: MOCK_EMPLOYEE.email,
-    }
-  }
-
-  // Duration of the manually-typed break window (0 if not fully provided).
-  function manualBreakMs(): number {
-    const bStart = parseLocalMs(breakStartField)
-    const bEnd = parseLocalMs(breakEndField)
-    if (bStart === null || bEnd === null) return 0
-    return Math.max(0, bEnd - bStart)
-  }
-
-  function startBreak() {
-    setCurrentBreakStartMs(Date.now())
-    setTimerStatus('paused')
-  }
-
-  function resumeSession() {
-    if (currentBreakStartMs === null) return
-    const breakDuration = Date.now() - currentBreakStartMs
-    setTotalBreakMs((prev) => prev + breakDuration)
-    setBreakCount((prev) => prev + 1)
-    setCurrentBreakStartMs(null)
-    setTimerStatus('running')
-  }
-
-  // Reset the timer state and clear the form after a completed entry.
+  // Reset the timer + form after a completed entry (rate stays = user's rate).
   function resetAll() {
     setTimerStatus('idle')
     setSessionStartMs(null)
@@ -211,7 +222,6 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     setProject('')
     setClient('')
     setActivityKey('')
-    setRate('')
     setLocation('')
     setEntryType('')
     setRetroStart('')
@@ -220,97 +230,205 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     setRetroEnd('')
     setObservations('')
     setRegisteredStart('')
+    setRate(userRate)
   }
 
-  function endSession() {
-    const now = Date.now()
-    const startMs = sessionStartMs ?? now
+  // Shared required-field check for both modules. Every field is required
+  // except the observations/notes (and, in manual mode, the optional break).
+  // Returns an error message, or null when all required fields are present.
+  function validateRequiredFields(): string | null {
+    if (!project.trim()) return 'Informe o projeto.'
+    if (!client.trim()) return 'Informe o cliente.'
+    if (!activityKey) return 'Selecione a atividade.'
+    if (!location) return 'Selecione o local de trabalho.'
+    if (!entryType) return 'Selecione o tipo de lançamento.'
+    return null
+  }
 
-    // Honor a retroactive end time when provided; otherwise stop at "now".
-    const retroEndMs = parseLocalMs(retroEnd)
-    const endMs = retroEndMs ?? now
-    if (endMs <= startMs) {
-      setError('emp_err_end_after_start')
+  async function startSession() {
+    if (pending.current) return
+    const missing = validateRequiredFields()
+    if (missing) {
+      setError(missing)
+      return
+    }
+    pending.current = true
+    setError(null)
+    try {
+      const res = await startSessionAction({
+        project,
+        client: client || undefined,
+        activityKey,
+        location: location || undefined,
+        entryType: entryType || undefined,
+        observations: observations || undefined,
+        // Live mode is strictly runtime: the server stamps the start at now.
+      })
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      const startMs = new Date(res.session.startedAt).getTime()
+      setSessionStartMs(startMs)
+      setTotalBreakMs(0)
+      setBreakCount(0)
+      setCurrentBreakStartMs(null)
+      setElapsedMs(Math.max(0, Date.now() - startMs))
+      setRegisteredStart(hhmmFromMs(startMs))
+      setRegisteredEnd('')
+      setTimerStatus('running')
+    } finally {
+      pending.current = false
+    }
+  }
+
+  async function startBreak() {
+    if (pending.current) return
+    pending.current = true
+    setError(null)
+    try {
+      const res = await breakAction()
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      const at = res.session.currentBreakStartedAt
+        ? new Date(res.session.currentBreakStartedAt).getTime()
+        : Date.now()
+      setCurrentBreakStartMs(at)
+      setTimerStatus('paused')
+    } finally {
+      pending.current = false
+    }
+  }
+
+  async function resumeSession() {
+    if (pending.current) return
+    pending.current = true
+    setError(null)
+    try {
+      const res = await resumeAction()
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      setTotalBreakMs(res.session.totalBreakMs)
+      setBreakCount(res.session.breakCount)
+      setCurrentBreakStartMs(null)
+      setTimerStatus('running')
+    } finally {
+      pending.current = false
+    }
+  }
+
+  async function endSession() {
+    if (pending.current) return
+    pending.current = true
+    setError(null)
+    try {
+      // Live mode is strictly runtime: the server stamps the end at now.
+      const res = await stopAction()
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      setEntries((prev) => [res.entry, ...prev])
+      setRegisteredEnd(res.entry.end)
+      resetAll()
+    } finally {
+      pending.current = false
+    }
+  }
+
+  async function saveManualEntry() {
+    if (pending.current) return
+
+    const missing = validateRequiredFields()
+    if (missing) {
+      setError(missing)
       return
     }
 
-    // Prefer live-tracked breaks; fall back to the manually-typed break window.
-    let breaksMs = currentBreakStartMs ? totalBreakMs + (now - currentBreakStartMs) : totalBreakMs
-    if (breaksMs === 0) breaksMs = manualBreakMs()
-
-    const netMs = Math.max(0, endMs - startMs - breaksMs)
-
-    const newEntry = makeEntry(registeredStart || hhmmFromMs(startMs), hhmmFromMs(endMs), netMs)
-    setEntries((prev) => [newEntry, ...prev])
-    setRegisteredEnd(hhmmFromMs(endMs))
-    setError(null)
-    resetAll()
-  }
-
-  // Create a completed entry purely from typed start/break/end times (no live timer).
-  function saveManualEntry() {
     const startMs = parseLocalMs(retroStart)
     const endMs = parseLocalMs(retroEnd)
 
     if (startMs === null) {
-      setError('emp_err_start_required')
+      setError('Informe a data/hora de início.')
       return
     }
     if (endMs === null) {
-      setError('emp_err_end_required')
+      setError('Informe a data/hora de término.')
       return
     }
     if (endMs <= startMs) {
-      setError('emp_err_end_after_start')
+      setError('O término deve ser depois do início.')
       return
     }
 
-    // Optional break window: both fields must be present together and sit inside the entry.
+    // Optional break window — both fields together and within the entry.
     const bStart = parseLocalMs(breakStartField)
     const bEnd = parseLocalMs(breakEndField)
     if ((bStart === null) !== (bEnd === null)) {
-      setError('emp_err_break_incomplete')
+      setError('Preencha início e fim do intervalo.')
       return
     }
-    let breaksMs = 0
+    let breakMs = 0
     if (bStart !== null && bEnd !== null) {
       if (bEnd <= bStart || bStart < startMs || bEnd > endMs) {
-        setError('emp_err_break_range')
+        setError('Intervalo fora do período do lançamento.')
         return
       }
-      breaksMs = bEnd - bStart
+      breakMs = bEnd - bStart
     }
 
-    const netMs = endMs - startMs - breaksMs
-    if (netMs <= 0) {
-      setError('emp_err_break_range')
-      return
-    }
-
-    const newEntry = makeEntry(hhmmFromMs(startMs), hhmmFromMs(endMs), netMs)
-    setEntries((prev) => [newEntry, ...prev])
+    pending.current = true
     setError(null)
-    resetAll()
+    try {
+      const res = await manualEntryAction({
+        project,
+        client: client || undefined,
+        activityKey,
+        location: location || undefined,
+        entryType: entryType || undefined,
+        startedAt: new Date(startMs).toISOString(),
+        endedAt: new Date(endMs).toISOString(),
+        breakMs,
+        notes: observations || undefined,
+      })
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      setEntries((prev) => [res.entry, ...prev])
+      resetAll()
+    } finally {
+      pending.current = false
+    }
   }
 
   function clearError() {
     setError(null)
   }
 
+  // View-only clear of the on-screen list; persisted entries remain in the DB
+  // and reappear on reload / navigation.
   function clearHistory() {
     setEntries([])
   }
 
-  // Merge edited fields into an existing history entry (in-memory).
-  function updateEntry(id: string, patch: Partial<HistoryEntry>) {
-    setEntries((prev) =>
-      prev.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)),
-    )
+  async function updateEntry(id: string, payload: UpdateEntryInput) {
+    const res = await updateEntryAction(id, payload)
+    if (!res.ok) {
+      setError(res.error)
+      return
+    }
+    setEntries((prev) => prev.map((entry) => (entry.id === id ? res.entry : entry)))
   }
 
   return (
     <TrackerContext.Provider
       value={{
+        mode, setMode,
         project, setProject,
         client, setClient,
         activityKey, setActivityKey,
@@ -327,6 +445,10 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
         timerStatus,
         elapsedMs,
         breakCount,
+        userName,
+        userEmail,
+        userRole,
+        hydrated,
         error,
         clearError,
         startSession,

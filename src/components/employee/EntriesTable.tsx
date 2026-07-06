@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
-import { MOCK_ENTRIES, type HistoryEntry } from '@/data/employee-mock'
+import type { HistoryEntry } from '@/data/employee-mock'
+import type { EntriesResult } from '@/lib/employee-store'
+import { listEntriesAction, updateEntryAction, type UpdateEntryInput } from '@/app/employee/tracker/actions'
 import { EditEntryDialog } from '@/components/employee/EditEntryDialog'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -39,39 +41,62 @@ const COLUMNS: TranslationKey[] = [
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
 
-export function EntriesTable() {
+export function EntriesTable({ initialResult }: { initialResult: EntriesResult }) {
   const { t } = useLanguage()
+  const [items, setItems] = useState<HistoryEntry[]>(initialResult.entries)
+  const [total, setTotal] = useState(initialResult.total)
+  const [page, setPage] = useState(initialResult.page)
+  const [pageSize, setPageSize] = useState(initialResult.limit)
   const [query, setQuery] = useState('')
-  const [pageSize, setPageSize] = useState(10)
-  const [page, setPage] = useState(1)
-  // Local, editable copy of the entries (in-memory for the session).
-  const [items, setItems] = useState(MOCK_ENTRIES)
+  const [loading, setLoading] = useState(false)
 
-  function handleSave(id: string, patch: Partial<HistoryEntry & { date?: string }>) {
-    setItems((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)))
+  // Skip the fetch on first mount — initialResult already holds page 1.
+  const mounted = useRef(false)
+  // Debounce timer for the project search.
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function load(nextPage: number, nextPageSize: number, nextQuery: string) {
+    setLoading(true)
+    try {
+      const res = await listEntriesAction({
+        page: nextPage,
+        limit: nextPageSize,
+        project: nextQuery || undefined,
+      })
+      if (res.ok) {
+        setItems(res.result.entries)
+        setTotal(res.result.total)
+        setPage(res.result.page)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return items
-    return items.filter(
-      (e) =>
-        e.project.toLowerCase().includes(q) ||
-        t(e.activityKey as TranslationKey).toLowerCase().includes(q),
-    )
-  }, [query, t, items])
+  // Reload when page or page size changes (search is handled by its own debounce).
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
+    load(page, pageSize, query)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize])
 
-  const total = filtered.length
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const currentPage = Math.min(page, totalPages)
-  const start = (currentPage - 1) * pageSize
-  const pageItems = filtered.slice(start, start + pageSize)
-  const from = total === 0 ? 0 : start + 1
-  const to = Math.min(start + pageSize, total)
+  async function handleSave(id: string, payload: UpdateEntryInput) {
+    const res = await updateEntryAction(id, payload)
+    if (res.ok) {
+      setItems((prev) => prev.map((e) => (e.id === id ? res.entry : e)))
+    }
+  }
 
   function onSearch(value: string) {
     setQuery(value)
-    setPage(1)
+    if (debounce.current) clearTimeout(debounce.current)
+    debounce.current = setTimeout(() => {
+      setPage(1)
+      load(1, pageSize, value)
+    }, 350)
   }
 
   function onPageSize(value: string | null) {
@@ -79,6 +104,11 @@ export function EntriesTable() {
     setPageSize(Number(value))
     setPage(1)
   }
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const start = (page - 1) * pageSize
+  const from = total === 0 ? 0 : start + 1
+  const to = Math.min(start + items.length, total)
 
   return (
     <Card className="py-0">
@@ -116,7 +146,7 @@ export function EntriesTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pageItems.length === 0 ? (
+                {items.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={COLUMNS.length}
@@ -126,7 +156,7 @@ export function EntriesTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  pageItems.map((entry) => (
+                  items.map((entry) => (
                     <TableRow key={entry.id}>
                       <TableCell className="tabular-nums text-muted-foreground">
                         {entry.date}
@@ -177,8 +207,8 @@ export function EntriesTable() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={currentPage <= 1}
-                  onClick={() => setPage(currentPage - 1)}
+                  disabled={page <= 1 || loading}
+                  onClick={() => setPage(page - 1)}
                   className="flex items-center gap-1"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -187,8 +217,8 @@ export function EntriesTable() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setPage(currentPage + 1)}
+                  disabled={page >= totalPages || loading}
+                  onClick={() => setPage(page + 1)}
                   className="flex items-center gap-1"
                 >
                   {t('emp_pg_next')}

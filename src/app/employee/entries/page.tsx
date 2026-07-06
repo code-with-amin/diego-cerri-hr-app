@@ -1,10 +1,11 @@
-'use client'
-
 import { EmployeeShell } from '../EmployeeShell'
 import { TrackerTopbar } from '../tracker/TrackerTopbar'
 import { EntriesTable } from '@/components/employee/EntriesTable'
+import { getEntries } from '@/lib/employee-store'
 
-export default function EmployeeEntriesPage() {
+export default async function EmployeeEntriesPage() {
+  const initial = await getEntries({ page: 1, limit: 10 })
+
   return (
     <EmployeeShell>
       <TrackerTopbar
@@ -12,7 +13,7 @@ export default function EmployeeEntriesPage() {
         title="emp_entries_title"
         desc="emp_entries_desc"
       />
-      <EntriesTable />
+      <EntriesTable initialResult={initial} />
     </EmployeeShell>
   )
 }

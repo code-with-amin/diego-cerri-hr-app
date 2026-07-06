@@ -14,7 +14,6 @@ import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
 import { TranslationKey } from '@/lib/i18n'
 import { Card } from '@/components/ui/card'
-import { MOCK_EMPLOYEE } from '@/data/employee-mock'
 
 const TIPS: TranslationKey[] = ['emp_tip_1', 'emp_tip_2', 'emp_tip_3']
 
@@ -32,7 +31,7 @@ export function TrackerSidebar({
 }) {
   const { t } = useLanguage()
   const pathname = usePathname()
-  const { timerStatus } = useTracker()
+  const { timerStatus, userName, userEmail } = useTracker()
 
   // `collapsed` is a desktop-only affordance; below lg the drawer is always
   // fully expanded, so collapse classes are all scoped to `lg:`.
@@ -82,8 +81,8 @@ export function TrackerSidebar({
           <span className="text-xs uppercase tracking-wide text-muted-foreground">
             {t('emp_user_connected')}
           </span>
-          <span className="font-bold">{MOCK_EMPLOYEE.name}</span>
-          <p className="text-xs text-muted-foreground">{MOCK_EMPLOYEE.role}</p>
+          <span className="font-bold">{userName || '—'}</span>
+          <p className="text-xs text-muted-foreground">{userEmail}</p>
         </Card>
 
         {/* Shortcuts */}
