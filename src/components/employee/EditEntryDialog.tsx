@@ -11,6 +11,7 @@ import type { UpdateEntryInput } from '@/app/employee/tracker/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Dialog,
   DialogClose,
@@ -247,6 +248,7 @@ export function EditEntryDialog({
             {t('emp_edit_cancel')}
           </DialogClose>
           <Button type="button" onClick={handleSave} disabled={saving}>
+            {saving && <Spinner className="mr-1.5 size-3.5" />}
             {t('emp_edit_save')}
           </Button>
         </DialogFooter>

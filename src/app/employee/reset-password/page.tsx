@@ -6,8 +6,8 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PasswordInput } from '@/components/ui/password-input'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { SubmitButton } from '@/app/login/SubmitButton'
 import { resetPasswordAction } from './actions'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import type { TranslationKey } from '@/lib/i18n'
@@ -59,9 +59,7 @@ function ResetForm() {
         />
       </div>
       {errorKey && <p className="text-sm text-destructive">{t(errorKey)}</p>}
-      <Button type="submit" className="w-full mt-2">
-        {t('emp_reset_submit')}
-      </Button>
+      <SubmitButton idleKey="emp_reset_submit" pendingKey="emp_reset_submitting" />
       <Link
         href="/employee/login"
         className="block text-center text-sm text-muted-foreground hover:text-foreground"

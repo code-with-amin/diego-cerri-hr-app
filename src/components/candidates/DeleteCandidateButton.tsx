@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { deleteCandidateAction } from '@/app/actions/delete-candidate'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 
@@ -116,6 +117,7 @@ export function DeleteCandidateButton({
                 onClick={confirmDelete}
                 disabled={isPending}
               >
+                {isPending && <Spinner className="mr-1.5 size-3.5" />}
                 {isPending ? t('delete_deleting') : t('delete_confirm')}
               </Button>
             </div>

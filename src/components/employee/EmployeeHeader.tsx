@@ -1,12 +1,27 @@
 'use client'
 
+import { useFormStatus } from 'react-dom'
 import { Menu } from 'lucide-react'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { useTracker } from '@/components/providers/TrackerContext'
 import { Language } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { ThemeToggle } from '@/components/employee/ThemeToggle'
 import { employeeLogoutAction } from '@/app/employee/login/actions'
+
+// Submit button for the sign-out form — reflects the action's pending state
+// with the shared spinner (must live inside the <form> to read useFormStatus).
+function SignOutButton() {
+  const { pending } = useFormStatus()
+  const { t } = useLanguage()
+  return (
+    <Button type="submit" variant="outline" size="sm" disabled={pending}>
+      {pending && <Spinner className="mr-1.5 size-3.5" />}
+      {t('emp_sign_out')}
+    </Button>
+  )
+}
 
 interface EmployeeHeaderProps {
   showSignOut?: boolean
@@ -60,7 +75,7 @@ export function EmployeeHeader({ showSignOut, onMenuClick }: EmployeeHeaderProps
         </div>
         {showSignOut && (
           <form action={employeeLogoutAction}>
-            <Button type="submit" variant="outline" size="sm">{t('emp_sign_out')}</Button>
+            <SignOutButton />
           </form>
         )}
       </div>

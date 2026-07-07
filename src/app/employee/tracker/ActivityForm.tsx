@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { DateTimePicker } from '@/components/employee/DateTimePicker'
 import {
   Select,
@@ -66,6 +67,7 @@ export function ActivityForm() {
     registeredStart,
     registeredEnd,
     timerStatus,
+    pendingAction,
     error,
     startSession,
     startBreak,
@@ -82,6 +84,7 @@ export function ActivityForm() {
   const isManual = mode === 'manual'
   // The mode can only be switched while no live session is in progress.
   const canSwitchMode = isIdle
+  const isBusy = pendingAction !== null
 
   return (
     <Card className="py-0">
@@ -354,40 +357,44 @@ export function ActivityForm() {
               <Button
                 type="button"
                 size="sm"
-                disabled={!isIdle}
+                disabled={!isIdle || isBusy}
                 onClick={startSession}
                 className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
               >
+                {pendingAction === 'start' && <Spinner className="mr-1.5 size-3.5" />}
                 {t('emp_btn_start')}
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={!isRunning}
+                disabled={!isRunning || isBusy}
                 onClick={startBreak}
                 className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
               >
+                {pendingAction === 'break' && <Spinner className="mr-1.5 size-3.5" />}
                 {t('emp_btn_break')}
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={!isPaused}
+                disabled={!isPaused || isBusy}
                 onClick={resumeSession}
                 className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
               >
+                {pendingAction === 'resume' && <Spinner className="mr-1.5 size-3.5" />}
                 {t('emp_btn_resume')}
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="destructive"
-                disabled={isIdle}
+                disabled={isIdle || isBusy}
                 onClick={endSession}
                 className="shrink-0 whitespace-nowrap disabled:pointer-events-auto disabled:cursor-not-allowed"
               >
+                {pendingAction === 'end' && <Spinner className="mr-1.5 size-3.5" />}
                 {t('emp_btn_end')}
               </Button>
             </>
@@ -397,9 +404,11 @@ export function ActivityForm() {
               type="button"
               size="sm"
               variant="outline"
+              disabled={isBusy}
               onClick={saveManualEntry}
               className="shrink-0 whitespace-nowrap border-primary text-primary hover:bg-primary/10 hover:text-primary disabled:pointer-events-auto disabled:cursor-not-allowed"
             >
+              {pendingAction === 'manual' && <Spinner className="mr-1.5 size-3.5" />}
               {t('emp_btn_manual_save')}
             </Button>
           )}

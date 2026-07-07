@@ -7,8 +7,8 @@ import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { SubmitButton } from '@/app/login/SubmitButton'
 import { employeeLoginAction } from './actions'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 
@@ -47,9 +47,7 @@ function LoginForm() {
       {hasError && (
         <p className="text-sm text-destructive">{t('login_error')}</p>
       )}
-      <Button type="submit" className="w-full mt-2">
-        {t('emp_login_submit')}
-      </Button>
+      <SubmitButton idleKey="emp_login_submit" pendingKey="login_submitting" />
       <Link
         href="/employee/forgot-password"
         className="block text-center text-sm text-muted-foreground hover:text-foreground"

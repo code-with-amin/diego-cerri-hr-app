@@ -178,12 +178,16 @@ function EmployeeRow({ employee, number }: { employee: Employee; number: number 
               : 'text-muted-foreground',
           )}
         >
-          <span
-            className={cn(
-              'mr-1 inline-block size-2 rounded-full',
-              employee.enabled ? 'bg-green-500' : 'bg-muted-foreground/50',
-            )}
-          />
+          {isPending ? (
+            <Spinner className="mr-1 size-2.5" />
+          ) : (
+            <span
+              className={cn(
+                'mr-1 inline-block size-2 rounded-full',
+                employee.enabled ? 'bg-green-500' : 'bg-muted-foreground/50',
+              )}
+            />
+          )}
           {employee.enabled ? t('emps_enabled') : t('emps_disabled')}
         </Button>
       </TableCell>

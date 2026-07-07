@@ -16,6 +16,8 @@ import type { BackendSession } from '@/lib/employee-store'
 
 export type TimerStatus = 'idle' | 'running' | 'paused'
 export type TrackerMode = 'live' | 'manual'
+// Which persisting action is currently in flight (drives button spinners).
+export type TrackerAction = 'start' | 'break' | 'resume' | 'end' | 'manual'
 
 interface TrackerContextValue {
   // Which module the form is in: live timer vs manual (retroactive) entry.
@@ -54,6 +56,9 @@ interface TrackerContextValue {
   timerStatus: TimerStatus
   elapsedMs: number
   breakCount: number
+
+  // Which persisting action is in flight (null when idle) — for button spinners.
+  pendingAction: TrackerAction | null
 
   // Connected user (from /me)
   userName: string
@@ -151,6 +156,8 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
 
   // Guards a mutation in flight so double-clicks don't double-post.
   const pending = useRef(false)
+  // Reactive mirror of the in-flight action so buttons can show a spinner.
+  const [pendingAction, setPendingAction] = useState<TrackerAction | null>(null)
 
   // Restore timer state from a persisted server session.
   function hydrateFromSession(session: BackendSession, fallbackRate: string) {
@@ -253,6 +260,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
       return
     }
     pending.current = true
+    setPendingAction('start')
     setError(null)
     try {
       const res = await startSessionAction({
@@ -279,12 +287,14 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
       setTimerStatus('running')
     } finally {
       pending.current = false
+      setPendingAction(null)
     }
   }
 
   async function startBreak() {
     if (pending.current) return
     pending.current = true
+    setPendingAction('break')
     setError(null)
     try {
       const res = await breakAction()
@@ -299,12 +309,14 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
       setTimerStatus('paused')
     } finally {
       pending.current = false
+      setPendingAction(null)
     }
   }
 
   async function resumeSession() {
     if (pending.current) return
     pending.current = true
+    setPendingAction('resume')
     setError(null)
     try {
       const res = await resumeAction()
@@ -318,12 +330,14 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
       setTimerStatus('running')
     } finally {
       pending.current = false
+      setPendingAction(null)
     }
   }
 
   async function endSession() {
     if (pending.current) return
     pending.current = true
+    setPendingAction('end')
     setError(null)
     try {
       // Live mode is strictly runtime: the server stamps the end at now.
@@ -337,6 +351,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
       resetAll()
     } finally {
       pending.current = false
+      setPendingAction(null)
     }
   }
 
@@ -382,6 +397,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     }
 
     pending.current = true
+    setPendingAction('manual')
     setError(null)
     try {
       const res = await manualEntryAction({
@@ -403,6 +419,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
       resetAll()
     } finally {
       pending.current = false
+      setPendingAction(null)
     }
   }
 
@@ -445,6 +462,7 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
         timerStatus,
         elapsedMs,
         breakCount,
+        pendingAction,
         userName,
         userEmail,
         userRole,

@@ -6,8 +6,8 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { SubmitButton } from '@/app/login/SubmitButton'
 import { forgotPasswordAction } from './actions'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 
@@ -33,9 +33,7 @@ function ForgotForm() {
         <Label htmlFor="email">{t('login_email')}</Label>
         <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
-      <Button type="submit" className="w-full mt-2">
-        {t('emp_forgot_submit')}
-      </Button>
+      <SubmitButton idleKey="emp_forgot_submit" pendingKey="emp_forgot_submitting" />
       <Link
         href="/employee/login"
         className="block text-center text-sm text-muted-foreground hover:text-foreground"

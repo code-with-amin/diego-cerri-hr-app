@@ -2,13 +2,32 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useFormStatus } from 'react-dom'
 import { LayoutDashboard, LogOut, Users, Clock } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Spinner } from '@/components/ui/spinner'
 import { logoutAction } from '@/app/login/actions'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TranslationKey } from '@/lib/i18n'
+
+// Sign-out control — shows the shared spinner in place of the icon while the
+// logout action runs (must live inside the <form> to read useFormStatus).
+function SignOutButton() {
+  const { pending } = useFormStatus()
+  const { t } = useLanguage()
+  return (
+    <button
+      type="submit"
+      title={t('sign_out')}
+      disabled={pending}
+      className="text-slate-500 hover:text-slate-200 transition-colors disabled:opacity-70"
+    >
+      {pending ? <Spinner className="h-4 w-4" /> : <LogOut className="h-4 w-4" />}
+    </button>
+  )
+}
 
 const navItems: { labelKey: TranslationKey; href: string; icon: typeof LayoutDashboard; exact: boolean }[] = [
   { labelKey: 'nav_dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
@@ -69,13 +88,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <p className="text-xs text-slate-500 truncate">admin@company.com</p>
         </div>
         <form action={logoutAction}>
-          <button
-            type="submit"
-            title={t('sign_out')}
-            className="text-slate-500 hover:text-slate-200 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <SignOutButton />
         </form>
       </div>
     </aside>
