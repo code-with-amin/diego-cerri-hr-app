@@ -35,7 +35,7 @@ export function DeleteCandidateButton({
     startTransition(async () => {
       const res = await deleteCandidateAction(candidateId)
       if (res?.error) {
-        setError(t('delete_error'))
+        setError(res.error || t('delete_error'))
         return
       }
       setOpen(false)

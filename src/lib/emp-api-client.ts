@@ -38,10 +38,11 @@ export async function empApiFetch<T>(path: string, init?: RequestInit): Promise<
     cache: 'no-store',
   })
 
-  if (res.status === 401) {
-    const cookieStore = await cookies()
-    cookieStore.delete(EMP_AUTH_COOKIE)
-    redirect('/employee/login')
+  // 401 (missing/expired/invalid token) or 403 (wrong role) → the employee
+  // logout route clears the cookie and forwards to /employee/login. Cookies
+  // can't be mutated during a render, so we don't delete here.
+  if (res.status === 401 || res.status === 403) {
+    redirect('/employee/logout')
   }
 
   if (!res.ok) {

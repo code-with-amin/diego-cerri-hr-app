@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { KeyRound, Check, MailCheck, MailWarning } from 'lucide-react'
+import { KeyRound, Check, MailCheck, MailWarning, Trash2, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,11 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import type { Employee } from '@/lib/hr-employees-store'
-import { updateEmployeeAction, setEmployeePasswordAction } from '@/app/actions/employees'
+import {
+  updateEmployeeAction,
+  setEmployeePasswordAction,
+  deleteEmployeeAction,
+} from '@/app/actions/employees'
 import { useLanguage } from '@/components/providers/LanguageProvider'
 import { TimesheetDialog } from './TimesheetDialog'
 
@@ -207,9 +211,148 @@ function EmployeeRow({ employee, number }: { employee: Employee; number: number 
             employeeName={employee.name}
             employeeEmail={employee.email}
           />
+          <DeleteEmployeeButton employee={employee} />
         </div>
       </TableCell>
     </TableRow>
+  )
+}
+
+function DeleteEmployeeButton({ employee }: { employee: Employee }) {
+  const { t } = useLanguage()
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [blockedCode, setBlockedCode] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  const isBlocked = blockedCode !== null
+  const blockedMessage =
+    blockedCode === 'EMPLOYEE_HAS_RECENT_HOURS'
+      ? t('emps_delete_blocked_recent')
+      : blockedCode === 'EMPLOYEE_HAS_ACTIVE_SESSION'
+        ? t('emps_delete_blocked_session')
+        : t('emps_delete_error')
+
+  function reset() {
+    setBlockedCode(null)
+    setError(null)
+  }
+
+  function confirmDelete() {
+    setError(null)
+    startTransition(async () => {
+      const res = await deleteEmployeeAction(employee.id)
+      if (res.error) {
+        if (
+          res.code === 'EMPLOYEE_HAS_RECENT_HOURS' ||
+          res.code === 'EMPLOYEE_HAS_ACTIVE_SESSION'
+        ) {
+          setBlockedCode(res.code)
+        } else {
+          setError(t('emps_delete_error'))
+        }
+        return
+      }
+      setOpen(false)
+      router.refresh()
+    })
+  }
+
+  function disableInstead() {
+    setError(null)
+    startTransition(async () => {
+      const res = await updateEmployeeAction(employee.id, { enabled: false })
+      if (res.error) {
+        setError(t('emps_delete_error'))
+        return
+      }
+      setOpen(false)
+      router.refresh()
+    })
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o)
+        if (!o) reset()
+      }}
+    >
+      <DialogTrigger
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t('emps_delete')}
+            title={t('emps_delete')}
+            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          />
+        }
+      >
+        <Trash2 className="h-4 w-4" />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle>
+                {isBlocked ? t('emps_delete_blocked_title') : t('emps_delete_title')}
+              </DialogTitle>
+              <DialogDescription className="mt-1">
+                {isBlocked ? (
+                  blockedMessage
+                ) : (
+                  <>
+                    <span className="font-medium text-foreground">{employee.name}</span>
+                    {' — '}
+                    {t('emps_delete_body')}
+                  </>
+                )}
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
+        {error && (
+          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
+
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isPending}>
+            {t('emps_delete_cancel')}
+          </Button>
+          {isBlocked ? (
+            employee.enabled && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={disableInstead}
+                disabled={isPending}
+              >
+                {isPending && <Spinner className="mr-1.5 size-3.5" />}
+                {t('emps_delete_disable_instead')}
+              </Button>
+            )
+          ) : (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isPending}
+            >
+              {isPending && <Spinner className="mr-1.5 size-3.5" />}
+              {isPending ? t('emps_delete_deleting') : t('emps_delete_confirm')}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

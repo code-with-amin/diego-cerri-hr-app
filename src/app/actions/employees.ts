@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { apiFetch } from '@/lib/api-client'
+import { apiFetch, ApiClientError } from '@/lib/api-client'
 import type { BackendEmployeeRow, BackendTimesheetResponse } from '@/lib/hr-employees-store'
 
 export async function updateEmployeeAction(
@@ -16,6 +16,21 @@ export async function updateEmployeeAction(
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to update employee'
     return { error: message }
+  }
+  revalidatePath('/dashboard/employees')
+  return {}
+}
+
+export async function deleteEmployeeAction(
+  id: string,
+): Promise<{ error?: string; code?: string }> {
+  try {
+    await apiFetch(`/employees/${id}`, { method: 'DELETE' })
+  } catch (err) {
+    if (err instanceof ApiClientError) {
+      return { error: err.message, code: err.code }
+    }
+    return { error: err instanceof Error ? err.message : 'Failed to delete employee' }
   }
   revalidatePath('/dashboard/employees')
   return {}
