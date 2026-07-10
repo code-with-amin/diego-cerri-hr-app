@@ -11,6 +11,7 @@ export async function employeeLoginAction(formData: FormData) {
   const password = formData.get('password') as string
 
   let token: string | null = null
+  let disabled = false
   try {
     const res = await fetch(`${API_URL}/employee/auth/login`, {
       method: 'POST',
@@ -20,6 +21,9 @@ export async function employeeLoginAction(formData: FormData) {
     if (res.ok) {
       const data = await res.json()
       token = data.token ?? null
+    } else if (res.status === 403) {
+      // Valid credentials but the account is disabled by an admin.
+      disabled = true
     }
   } catch {
     // network error — fall through to the error redirect
@@ -35,6 +39,10 @@ export async function employeeLoginAction(formData: FormData) {
       path: '/',
     })
     redirect('/employee/dashboard')
+  }
+
+  if (disabled) {
+    redirect('/employee/login?error=disabled')
   }
 
   redirect('/employee/login?error=invalid')

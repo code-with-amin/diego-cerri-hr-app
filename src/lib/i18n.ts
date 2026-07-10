@@ -207,6 +207,7 @@ export const translations = {
     login_submit: 'Sign in',
     login_submitting: 'Signing in…',
     login_error: 'Invalid email or password. Please try again.',
+    login_disabled: 'Your account has been disabled. Please contact your administrator.',
     login_restricted: 'Restricted to authorised HR personnel only.',
     // Employee module
     emp_portal: 'Employee Portal',
@@ -563,6 +564,7 @@ export const translations = {
     login_submit: 'Entrar',
     login_submitting: 'Entrando…',
     login_error: 'E-mail ou senha inválidos. Tente novamente.',
+    login_disabled: 'Sua conta foi desativada. Entre em contato com o administrador.',
     login_restricted: 'Restrito apenas a pessoal de RH autorizado.',
     // Employee module
     emp_portal: 'Portal do Colaborador',
