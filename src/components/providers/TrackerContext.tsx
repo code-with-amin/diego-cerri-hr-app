@@ -13,6 +13,7 @@ import {
   type UpdateEntryInput,
 } from '@/app/employee/tracker/actions'
 import type { BackendSession } from '@/lib/employee-store'
+import { useLanguage } from '@/components/providers/LanguageProvider'
 
 export type TimerStatus = 'idle' | 'running' | 'paused'
 export type TrackerMode = 'live' | 'manual'
@@ -117,6 +118,9 @@ function toRateStr(rateStr: string): string {
 }
 
 export function TrackerProvider({ children }: { children: React.ReactNode }) {
+  // Translator — so client-side validation messages follow the active language.
+  const { t } = useLanguage()
+
   // Module selector: 'live' captures times at click-time, 'manual' takes them
   // from the datetime pickers.
   const [mode, setMode] = useState<TrackerMode>('live')
@@ -244,11 +248,11 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
   // except the observations/notes (and, in manual mode, the optional break).
   // Returns an error message, or null when all required fields are present.
   function validateRequiredFields(): string | null {
-    if (!project.trim()) return 'Informe o projeto.'
-    if (!client.trim()) return 'Informe o cliente.'
-    if (!activityKey) return 'Selecione a atividade.'
-    if (!location) return 'Selecione o local de trabalho.'
-    if (!entryType) return 'Selecione o tipo de lançamento.'
+    if (!project.trim()) return t('emp_err_project_required')
+    if (!client.trim()) return t('emp_err_client_required')
+    if (!activityKey) return t('emp_err_activity_required')
+    if (!location) return t('emp_err_location_required')
+    if (!entryType) return t('emp_err_entry_type_required')
     return null
   }
 
@@ -368,15 +372,15 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     const endMs = parseLocalMs(retroEnd)
 
     if (startMs === null) {
-      setError('Informe a data/hora de início.')
+      setError(t('emp_err_start_required'))
       return
     }
     if (endMs === null) {
-      setError('Informe a data/hora de término.')
+      setError(t('emp_err_end_required'))
       return
     }
     if (endMs <= startMs) {
-      setError('O término deve ser depois do início.')
+      setError(t('emp_err_end_after_start'))
       return
     }
 
@@ -384,13 +388,13 @@ export function TrackerProvider({ children }: { children: React.ReactNode }) {
     const bStart = parseLocalMs(breakStartField)
     const bEnd = parseLocalMs(breakEndField)
     if ((bStart === null) !== (bEnd === null)) {
-      setError('Preencha início e fim do intervalo.')
+      setError(t('emp_err_break_incomplete'))
       return
     }
     let breakMs = 0
     if (bStart !== null && bEnd !== null) {
       if (bEnd <= bStart || bStart < startMs || bEnd > endMs) {
-        setError('Intervalo fora do período do lançamento.')
+        setError(t('emp_err_break_range'))
         return
       }
       breakMs = bEnd - bStart
