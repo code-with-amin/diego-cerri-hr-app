@@ -49,6 +49,16 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
       const body = JSON.parse(text)
       if (body?.error?.message) message = body.error.message
       if (body?.error?.details?.code) code = body.error.details.code
+      // Validation errors arrive as { message: 'Validation failed', details: {
+      // field: [msg, ...] } }. Surface the specific field message(s) instead of
+      // the generic "Validation failed" so callers can show a useful reason.
+      const details = body?.error?.details
+      if (message === 'Validation failed' && details && typeof details === 'object') {
+        const fieldMsgs = Object.values(details)
+          .flat()
+          .filter((m): m is string => typeof m === 'string')
+        if (fieldMsgs.length > 0) message = fieldMsgs.join(' ')
+      }
     } catch {
       // Non-JSON body — fall back to the raw text.
     }

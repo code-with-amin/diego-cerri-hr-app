@@ -373,13 +373,15 @@ function ChangePasswordDialog({
   function submit() {
     setError(null)
     if (password.length < 8) {
-      setError(t('emps_pwd_error'))
+      setError(t('emps_pwd_min'))
       return
     }
     startTransition(async () => {
       const res = await setEmployeePasswordAction(employeeId, password)
       if (res.error) {
-        setError(t('emps_pwd_error'))
+        // Prefer the specific reason from the API (e.g. validation message);
+        // fall back to the generic copy only when none was provided.
+        setError(res.error || t('emps_pwd_error'))
         return
       }
       // Keep the dialog open and confirm whether the new-password email went out.
