@@ -15,7 +15,9 @@ import { useLanguage } from '@/components/providers/LanguageProvider'
 function LoginForm() {
   const { t } = useLanguage()
   const searchParams = useSearchParams()
-  const hasError = searchParams.get('error') === 'invalid'
+  const errorParam = searchParams.get('error')
+  const hasError = errorParam === 'invalid'
+  const isDisabled = errorParam === 'disabled'
   const resetDone = searchParams.get('reset') === '1'
 
   return (
@@ -46,6 +48,9 @@ function LoginForm() {
       )}
       {hasError && (
         <p className="text-sm text-destructive">{t('login_error')}</p>
+      )}
+      {isDisabled && (
+        <p className="text-sm text-destructive">{t('login_disabled')}</p>
       )}
       <SubmitButton idleKey="emp_login_submit" pendingKey="login_submitting" />
       <Link
